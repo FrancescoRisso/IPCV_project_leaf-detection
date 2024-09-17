@@ -12,11 +12,6 @@ class Segment:
         ----------
         - corner: the starting point of the segment
         - length: the length of the segment
-
-        ---------------------------------------------------------------------
-        OUTPUT
-        ------
-        The segment itself
         """
         self.corner = corner
         self.length = length
