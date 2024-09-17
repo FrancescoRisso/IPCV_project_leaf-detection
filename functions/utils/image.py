@@ -37,7 +37,7 @@ class Image:
         self.__img_format = format
 
     @classmethod
-    def fromFile(cls, path: str) -> Image:
+    def from_file(cls, path: str) -> Image:
         """
         Creates a new image, loading it from file.
 
