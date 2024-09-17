@@ -255,7 +255,7 @@ class Image:
         - path: where to save the image (with the extension)
         """
 
-        cv2.imwrite(path, self.__image)
+        cv2.imwrite(path, self.as_BGR())
 
     def dilate(self, kernel: MatLike, iterations: int = 1) -> None:
         """
