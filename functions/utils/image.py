@@ -260,7 +260,7 @@ class Image:
     def dilate(self, kernel: MatLike, iterations: int = 1) -> None:
         """
         Performs the dilation morphological operator on the image
-    
+
         ---------------------------------------------------------------------
         PARAMETERS
         ----------
@@ -273,7 +273,7 @@ class Image:
     def erode(self, kernel: MatLike, iterations: int = 1) -> None:
         """
         Performs the erosion morphological operator on the image
-    
+
         ---------------------------------------------------------------------
         PARAMETERS
         ----------
@@ -286,7 +286,7 @@ class Image:
     def close(self, kernel: MatLike, iterations: int = 1) -> None:
         """
         Performs the closure morphological operator on the image
-    
+
         ---------------------------------------------------------------------
         PARAMETERS
         ----------
@@ -299,7 +299,7 @@ class Image:
     def open(self, kernel: MatLike, iterations: int = 1) -> None:
         """
         Performs the opening morphological operator on the image
-    
+
         ---------------------------------------------------------------------
         PARAMETERS
         ----------
