@@ -160,6 +160,45 @@ class Image:
         self.__convert_format(Formats.HSV)
         return self.__image[:, :, 2]
 
+    def blue(self) -> MatLike:
+        """
+        Returns the image as matrix of blue values
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        The matrix of the image
+        """
+
+        self.__convert_format(Formats.BGR)
+        return self.__image[:, :, 0]
+
+    def green(self) -> MatLike:
+        """
+        Returns the image as matrix of green values
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        The matrix of the image
+        """
+
+        self.__convert_format(Formats.BGR)
+        return self.__image[:, :, 1]
+
+    def red(self) -> MatLike:
+        """
+        Returns the image as matrix of red values
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        The matrix of the image
+        """
+
+        self.__convert_format(Formats.BGR)
+        return self.__image[:, :, 2]
+
     def hue_saturation_value(self) -> tuple[MatLike, MatLike, MatLike]:
         """
         Returns the image as three distinct matrices of hue, saturation,
