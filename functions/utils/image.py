@@ -308,3 +308,16 @@ class Image:
         """
         self.erode(kernel, iterations)
         self.dilate(kernel, iterations)
+
+    def clone(self) -> Image:
+        """
+        Creates an independent copy of an image, so that changes on it are
+        not reflected on the initial image
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        An identical image
+        """
+
+        return Image(self.__image, self.__img_format)
