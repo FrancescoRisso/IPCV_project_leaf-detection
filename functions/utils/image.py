@@ -321,3 +321,27 @@ class Image:
         """
 
         return Image(self.__image, self.__img_format)
+
+    def height(self) -> int:
+        """
+        Reutrns the height of the image in pixels
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        The height of the image in pixels
+        """
+
+        return self.__image.shape[0]
+    
+    def width(self) -> int:
+        """
+        Reutrns the width of the image in pixels
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        The width of the image in pixels
+        """
+        
+        return self.__image.shape[1]
