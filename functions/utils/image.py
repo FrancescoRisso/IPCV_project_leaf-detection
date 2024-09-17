@@ -225,6 +225,26 @@ class Image:
         """
         self.__image = cv2.rotate(self.__image, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
+    def threshold(self, threshold: float, max: float, inverted: bool = False) -> None:
+        """
+        Performs a thresholding operation on the image, that must be
+        monochromatic (otherwhise, an error is raised)
+
+        ---------------------------------------------------------------------
+        PARAMETERS
+        ----------
+        - threshold: the threshold value to distinguish "on" and "off"
+        - max: the maximum value each pixel can have in the image
+        - inverted: if the "on" value should be for the brightest pixels
+            (default, inverted=False) or for the dimmest pixels (True)
+        """
+
+        if self.__img_format != Formats.monochromatic:
+            raise Exception("Cannot threshold a non-monochromatic image")
+
+        option = cv2.THRESH_BINARY_INV if inverted else cv2.THRESH_BINARY
+        self.__image = cv2.threshold(self.__image, threshold, max, option)[1]
+
     def save_as_file(self, path: str) -> None:
         """
         Stores the image as a file
