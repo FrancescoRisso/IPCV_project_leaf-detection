@@ -74,6 +74,7 @@ class Image:
             raise Exception(f"Could not convert from {self.__img_format} to {to}")
 
         self.__image = cv2.cvtColor(self.__image, converter)
+        self.__img_format = to
 
     def as_BGR(self) -> MatLike:
         """
