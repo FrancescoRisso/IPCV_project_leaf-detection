@@ -50,7 +50,7 @@ class Segment:
 
     def __repr__(self) -> str:
         """
-        Describes the segment as "Segment[from: <corner>, long: <length>]"
+        Describes the segment as "Segment[from: _corner_, long: _length_]"
 
         ---------------------------------------------------------------------
         OUTPUT
