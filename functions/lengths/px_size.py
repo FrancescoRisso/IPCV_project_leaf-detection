@@ -1,6 +1,8 @@
-from functions.utils.image import Image
-from functions.utils.image import Formats
 from functions.utils.segment import Segment
+
+import cv2
+from cv2.typing import MatLike
+
 
 WHITE_THRESHOLD = 35
 CONSECUTIVE_PX_OF_PAPER = 20
@@ -8,7 +10,7 @@ A4_WIDTH_CM = 210
 A4_HEIGHT_CM = 297
 
 
-def get_px_height_in_cm(img: Image) -> float:
+def get_px_height_in_cm(img: MatLike) -> float:
     """
     Returns the height in cm of a pixel of the picture, obtained by
     comparing the A4 paper height (in cm) to the number of pixels of
@@ -25,14 +27,14 @@ def get_px_height_in_cm(img: Image) -> float:
     The average height in cm of a pixel of the picture
     """
 
-    w = img.width()
+    w = img.shape[1]
 
     paper_height: int = __count_paper_pixels_at_col(img, int(0.5 * w)).length
 
     return A4_HEIGHT_CM * 1.0 / paper_height
 
 
-def get_px_width_in_cm(img: Image) -> float:
+def get_px_width_in_cm(img: MatLike) -> float:
     """
     Returns the width in cm of a pixel of the picture, obtained by
     comparing the A4 paper width (in cm) to the number of pixels of
@@ -49,14 +51,14 @@ def get_px_width_in_cm(img: Image) -> float:
     The average width in cm of a pixel of the picture
     """
 
-    h = img.height()
+    h = img.shape[0]
 
     paper_width: int = __count_paper_pixels_at_row(img, int(0.5 * h)).length
 
     return A4_WIDTH_CM * 1.0 / paper_width
 
 
-def __count_paper_pixels_at_row(img: Image, row_no: int) -> Segment:
+def __count_paper_pixels_at_row(img: MatLike, row_no: int) -> Segment:
     """
     Checks which pixels of a given row of pixels of an image are part of
     a white paper sheet.
@@ -64,7 +66,7 @@ def __count_paper_pixels_at_row(img: Image, row_no: int) -> Segment:
     ---------------------------------------------------------------------
     Parameters
     ----------
-    - img: the image to be considered
+    - img: the image to be considered, as HSV
     - row_no: the index of the row to be considered
 
     ---------------------------------------------------------------------
@@ -73,12 +75,11 @@ def __count_paper_pixels_at_row(img: Image, row_no: int) -> Segment:
     the width w of the sheet, in a tuple structured as (d, w), with all
     measures in pixels
     """
-    matrix = img.as_HSV()
-    row = Image(matrix[row_no : row_no + 1, :], Formats.HSV)
+    row = img[row_no : row_no + 1, :]
     return __count_paper_pixels(row)
 
 
-def __count_paper_pixels_at_col(img: Image, col_no: int) -> Segment:
+def __count_paper_pixels_at_col(img: MatLike, col_no: int) -> Segment:
     """
     Checks which pixels of a given colum of pixels of an image are part of
     a white paper sheet.
@@ -95,13 +96,12 @@ def __count_paper_pixels_at_col(img: Image, col_no: int) -> Segment:
     the height h of the sheet, in a tuple structured as (d, h), with all
     measures in pixels
     """
-    matrix = img.as_HSV()
-    col = Image(matrix[:, col_no : col_no + 1, :], Formats.HSV)
-    col.rotate_anticlockwise_90()
+    col = img[:, col_no : col_no + 1, :]
+    col = cv2.rotate(col, cv2.ROTATE_90_COUNTERCLOCKWISE)
     return __count_paper_pixels(col)
 
 
-def __count_paper_pixels(img: Image) -> Segment:
+def __count_paper_pixels(img: MatLike) -> Segment:
     """
     Checks which pixels of a one-row image are part of a white paper
     sheet
@@ -119,12 +119,12 @@ def __count_paper_pixels(img: Image) -> Segment:
     The segment that describes the paper sheet in the middle of the image
     """
 
-    w = img.width()
-    saturation = img.saturation()
+    w = img.shape[1]
+    saturation = img[:, :, 1]
 
     margin_left: int = 0
     margin_right: int = 0
-    
+
     # CONSECUTIVE_PX_OF_PAPER white pixels are required to reduce noise
     # This value is then subtracted by the count
     consecutive_match: int = 0
