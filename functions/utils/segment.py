@@ -48,7 +48,7 @@ class Segment:
         ------
         The intersection
         """
-        
+
         corner = max(self.corner, other.corner)
         other_corner = min(self.other_corner(), other.other_corner())
         return Segment(corner, other_corner - corner)
