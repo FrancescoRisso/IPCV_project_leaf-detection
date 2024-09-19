@@ -1,26 +1,38 @@
 import cv2
 import numpy as np
 from cv2.typing import MatLike
-import matplotlib.pyplot as plt
-
-img = cv2.imread("C:/Users/Utente/Desktop/scuola/universita/ImgProcessing/IPCV-leaf.detection/IPCV_project_leaf-detection/dataset/acero rubrum/010.jpg")
-imgG = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-imgG = cv2.blur(imgG,(8,8))
+from typing import Tuple
 
 WHITE_THRESHOLD = 120
+NUM_OF_SAMPLES = 30
 
-'''
-plt.subplot(2, 2, 1)
-plt.imshow(img, cmap="grey")
-plt.axis("off")
-plt.title("og")'''
 
-def __detect_lines(img) :
+def __detect_lines(img: MatLike) -> Tuple[np.ndarray, MatLike]:
+    """
+    The function uses the hough transform to detect the border of the 
+    paper sheet
 
+    ---------------------------------------------------------------------
+    PARAMETERS
+    ----------
+    
+    - img: the image, in BGR
+
+    ---------------------------------------------------------------------
+    OUTPUT
+    ------
+    - lines: list of segments, expressed like [x1 y1 x2 y1] (!)
+            note that each element is still a list, of only one element(?), 
+            to access the points you must acces line[0] = [x1 y1 x2 y2]
+
+    - thImg: the image thresholded with the WHITE_THRESHOLD value
+    """
+
+    imgG = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    imgG = cv2.blur(imgG,(8,8))
     ret,thImg = cv2.threshold(imgG,WHITE_THRESHOLD,255, cv2.THRESH_BINARY)
 
     ker1 = np.ones((26,26), np.uint8)
-
     thImg = cv2.erode(thImg, ker1)
     thImg = cv2.dilate(thImg, ker1)
 
@@ -36,24 +48,28 @@ def __detect_lines(img) :
     # ! note that line is still a list, of only one element (?), to access
     #   the points you must acces line[0] = [x1 y1 x2 y2]
 
-    print(lines)
-    print("Detected lines: ", len(lines))
-    print("img shape: ",img.shape[0],img.shape[1])
-
-    '''
-    for line in lines:
-        line = line[0]
-        img = cv2.line(img, (line[0], line[1]), (line[2], line[3]), (0,0,255), 15)
-    '''
     return lines, thImg  
 
-#
-#   find the possible coortinates of the 4 side, margin Left, Right, Top, Bottom, given the tresholded image thImg
-#
 
-NUM_OF_SAMPLES = 30
+def find_paper_margin(thImg: MatLike, img: MatLike) -> Tuple[int, int, int, int]:
+    """
+    The function finds the 4 margins of the paper sheet, using
+    a median value.
+    From each side it checks NUM_OF_SAMPLES times the distance of the
+    paper's white, then it return the median value
 
-def find_paper_margin(thImg, img) :
+    ---------------------------------------------------------------------
+    PARAMETERS
+    ----------
+    - thImg: the image thresholded with the WHITE_THRESHOLD value
+    - img: the image, in RGB
+
+    ---------------------------------------------------------------------
+    OUTPUT
+    ------
+    - marginL, marginR, marginT, marginB are the pixel positions of the
+      left, right, top and bottom margin of the paper sheet
+    """
 
     imgH, imgW = img.shape[:2]
     marginL = 0
@@ -61,12 +77,12 @@ def find_paper_margin(thImg, img) :
     marginT = 0
     marginB = imgH
 
-
     # trovo il margine sinistro: partendo dal bordo immagine avanzo fino al foglio per più (numOfSample) volte
     # la coordinata x del margine sarà la mediana dei valori deltaX , cioè la mediana delle coordinate dei punti del bordo
 
     # !!! da gestire errore per accesso fuori dall'immagine
 
+    # left border
     samples = []
     deltaY = 0
     for i in range(NUM_OF_SAMPLES):
@@ -83,10 +99,7 @@ def find_paper_margin(thImg, img) :
     marginL = samples[len(samples)//2]
     samples.clear()
 
-    #
-    # margine destro
-    #
-
+    # right border
     samples = []
     deltaY = 0
     for i in range(NUM_OF_SAMPLES):
@@ -103,10 +116,7 @@ def find_paper_margin(thImg, img) :
     marginR = samples[len(samples)//2]
     samples.clear()
 
-    #
-    # Margine Top
-    #
-
+    # top border
     samples = []
     deltaX = 0
     for i in range(NUM_OF_SAMPLES):
@@ -123,10 +133,7 @@ def find_paper_margin(thImg, img) :
     marginT = samples[len(samples)//2]
     samples.clear()
 
-    #
-    #   Margine Bottom
-    #
-
+    # bottom border
     samples = []
     deltaX = 0
     for i in range(NUM_OF_SAMPLES):
@@ -143,44 +150,61 @@ def find_paper_margin(thImg, img) :
     marginB = samples[len(samples)//2]
     samples.clear()
 
-    '''
-    img = cv2.line(img, (marginL, imgH), (marginL, 0), (0,255, 0), 10)
-    img = cv2.line(img, (marginR, imgH), (marginR, 0), (0,255, 0), 10)
-    img = cv2.line(img, (0, marginT), (imgW, marginT), (0,255, 0), 10)
-    img = cv2.line(img, (0, marginB), (imgW, marginB), (0,255, 0), 10)'''
-
-    print("MarginL: ", marginL, " - MarginR: ", marginR, " - MarginT: ", marginT, " - MarginB: ", marginB)
     return marginL, marginR, marginT, marginB
 
-##
-##  Classificate the lines found via hough by linking them to the side of the sheet they belong
-##
 
-#PERCENTUALE_DISTANZA_LATO costante che indica quanto può essere distante un segmento dal lato pe
-# poter essere considerato parte di esso
-DIST_PERC = 1.8
+def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]: 
+    """
+    The function finds the 4 pixel values of the paper sheet side, 
+    in such a way to extract a rectangular region of interest which
+    inlcludes only white paper and the leaf.
+    It iterates on the segments found by the function __detect_lines
+    and it assign them to the relative paper margin. Then the most
+    conservative value is chosen, so there will be no backruond
+    in the extracted roi. The roi will be img[roiT:roiB , roiL:roiR]
 
-# the values i will use to extract the roi in such a way that 
-# only the sheet of paper and the leaf are in
+    ---------------------------------------------------------------------
+    PARAMETERS
+    ----------
+    
+    - img: the image, in RGB
 
-def find_roi_boundaries(img, lines, marginL, marginR, marginT, marginB) : 
+    ---------------------------------------------------------------------
+    OUTPUT
+    ------
+    - roiL, roiR, roiT, roiB: piexl values of the 4 sides of the roi,
+        the left, right, top and bottom one. A slice can be calculated
+        like img[ roiT:roiB , roiL:roiR ]
+    """
+
+
+    # % of the min between height and width of the image that i want my roi to be reduced by
+    PADDING = 0.9
+
+    # constant percentual value, relative to the min beween the image width and height
+    # it dictates if a segment belongs or not to a border, based on the distance
+    DIST_PERC = 1.8
 
     imgH, imgW = img.shape[:2]
     roiL = 0; roiR = imgW; roiT = 0; roiB = imgH
 
-    def isVertical(points):
-        if abs(points[2]-points[0]) < 10 : 
+    lines, thImg = __detect_lines(img)
+
+    marginL, marginR, marginT, marginB = find_paper_margin(thImg, img)
+
+
+    def isVertical(points: list[int]) -> int:
+        if abs(points[2]-points[0]) < 20 : 
             return 1 
         return 0
 
-    def isHorizontal(points):
-        if abs(points[3]-points[1]) < 10 : 
+    def isHorizontal(points: list[int]) -> int:
+        if abs(points[3]-points[1]) < 20 : 
             return 1 
         return 0
 
-    def belongsToSide(point, side) :
-        #if (point < side + int(((DIST_PERC/100)*imgW)) ) and ( point > side - int(((DIST_PERC/100)*imgW)) ) :
-        if (point < side + int(((DIST_PERC/100)*imgW)) ) and ( point > side - int(((DIST_PERC/100)*imgW))) :
+    def belongsToSide(point: int, side: int) -> int :
+        if (point < side + int(((DIST_PERC/100)*min(imgW, imgH))) ) and ( point > side - int(((DIST_PERC/100)*min(imgW, imgH)))) :
             return 1
         return 0
 
@@ -188,7 +212,7 @@ def find_roi_boundaries(img, lines, marginL, marginR, marginT, marginB) :
         line = line[0]
         if isVertical(line) :
 
-            # check if the line belongs to the left side
+            # check if the segmemt belongs to the left border
             if belongsToSide(line[0], marginL) or belongsToSide(line[2], marginL) :
                 # if true I eventually update roiL with a more conservative value
                 if max(line[0], line[2]) > roiL :
@@ -200,7 +224,9 @@ def find_roi_boundaries(img, lines, marginL, marginR, marginT, marginB) :
         
         elif isHorizontal(line) :
 
+            # check if the segment belongs to the top border
             if belongsToSide(line[1], marginT) or belongsToSide(line[3], marginT) :
+                # if it does i eventually update it with a more conservative value
                 if max(line[1], line[3]) > roiT :
                     roiT = max(line[1], line[3])
             
@@ -208,20 +234,8 @@ def find_roi_boundaries(img, lines, marginL, marginR, marginT, marginB) :
                 if min(line[1], line[3]) < roiB :
                     roiB = min(line[1], line[3])
 
-    plt.subplot(1, 2, 1)
-    plt.imshow(img[roiT:roiB , roiL:roiR])
-    plt.axis("off")
-    plt.title("exact roi")
-
-    print("roiL: ", roiL, " - roiR: ", roiR, " - roiT: ", roiT, " - roiB: ", roiB)
-
-
-    plt.subplot(1, 2, 2)
-    plt.imshow(img)
-    plt.axis("off")
-    plt.title("bordo")
-
-
-    plt.show()
+    # restirct the roi area with the specified padding
+    padd = int(PADDING/100 * min(imgH,imgW))
+    roiL += padd; roiR -= padd; roiT += padd; roiB -= padd
 
     return roiL, roiR, roiT, roiB
