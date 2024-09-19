@@ -98,3 +98,20 @@ class Segment:
         corner = self.corner + int(self.length / 2)
         length = self.length - int(self.length / 2)
         return Segment(corner, length)
+
+    def other_half(self, half: Segment) -> Segment:
+        """
+        Given either the first or the second half of this segment, returns
+        the other half
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        The other half of this segment
+        """
+        if half == self.first_half():
+            return self.second_half()
+        elif half == self.second_half():
+            return self.first_half()
+        else:
+            raise Exception(f"{half} is not the first or second half of {self}")
