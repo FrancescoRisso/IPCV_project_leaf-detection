@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-img = cv2.imread("./dataset/salvia/001.jpg")
+img = cv2.imread("./dataset/acero rubrum/002.jpg")
 imgG = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 imgG = cv2.blur(imgG,(8,8))
 
@@ -171,17 +171,18 @@ DIST_PERC = 1
 roiL = 0; roiR = imgW; roiT = 0; roiB = imgH
 
 def isVertical(points):
-    if (line[2]-line[0]) < 5 : 
+    if abs(points[2]-points[0]) < 10 : 
         return 1 
-    return -1
+    return 0
 
 def isHorizontal(points):
-    if (line[2]-line[0]) < 5 : 
+    if abs(points[3]-points[1]) < 10 : 
         return 1 
     return 0
 
 def belongsToSide(point, side) :
-    if (point < side + int(((DIST_PERC/100)*imgW)) ) and ( point > side - int(((DIST_PERC/100)*imgW)) ) :
+    #if (point < side + int(((DIST_PERC/100)*imgW)) ) and ( point > side - int(((DIST_PERC/100)*imgW)) ) :
+    if (point < side + 30 ) and ( point > side - 30 ) :
         return 1
     return 0
 
@@ -218,7 +219,7 @@ print("roiL: ", roiL, " - roiR: ", roiR, " - roiT: ", roiT, " - roiB: ", roiB)
 
 
 plt.subplot(1, 2, 2)
-plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+plt.imshow(img)
 plt.axis("off")
 plt.title("bordo")
 
