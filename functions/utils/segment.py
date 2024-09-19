@@ -16,6 +16,11 @@ class Segment:
         self.corner = corner
         self.length = length
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Segment):
+            return NotImplemented
+        return (self.corner == other.corner) and (self.length == other.length)
+
     def other_corner(self) -> int:
         """
         Returns the (monodirectional) coordinate of the end point of the
