@@ -12,8 +12,8 @@ A4_HEIGHT_MM = 297
 
 def get_px_height_in_mm(img: MatLike) -> float:
     """
-    Returns the height in cm of a pixel of the picture, obtained by
-    comparing the A4 paper height (in cm) to the number of pixels of
+    Returns the height in mm of a pixel of the picture, obtained by
+    comparing the A4 paper height (in mm) to the number of pixels of
     paper in the central column of pixels
 
     ---------------------------------------------------------------------
@@ -24,7 +24,7 @@ def get_px_height_in_mm(img: MatLike) -> float:
     ---------------------------------------------------------------------
     Returns
     -------
-    The average height in cm of a pixel of the picture
+    The average height in mm of a pixel of the picture
     """
 
     w = img.shape[1]
@@ -36,8 +36,8 @@ def get_px_height_in_mm(img: MatLike) -> float:
 
 def get_px_width_in_mm(img: MatLike) -> float:
     """
-    Returns the width in cm of a pixel of the picture, obtained by
-    comparing the A4 paper width (in cm) to the number of pixels of
+    Returns the width in mm of a pixel of the picture, obtained by
+    comparing the A4 paper width (in mm) to the number of pixels of
     paper in the central row of pixels
 
     ---------------------------------------------------------------------
@@ -48,7 +48,7 @@ def get_px_width_in_mm(img: MatLike) -> float:
     ---------------------------------------------------------------------
     Returns
     -------
-    The average width in cm of a pixel of the picture
+    The average width in mm of a pixel of the picture
     """
 
     h = img.shape[0]
