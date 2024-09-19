@@ -6,11 +6,11 @@ from cv2.typing import MatLike
 
 WHITE_THRESHOLD = 35
 CONSECUTIVE_PX_OF_PAPER = 20
-A4_WIDTH_CM = 210
-A4_HEIGHT_CM = 297
+A4_WIDTH_MM = 210
+A4_HEIGHT_MM = 297
 
 
-def get_px_height_in_cm(img: MatLike) -> float:
+def get_px_height_in_mm(img: MatLike) -> float:
     """
     Returns the height in cm of a pixel of the picture, obtained by
     comparing the A4 paper height (in cm) to the number of pixels of
@@ -31,10 +31,10 @@ def get_px_height_in_cm(img: MatLike) -> float:
 
     paper_height: int = __count_paper_pixels_at_col(img, int(0.5 * w)).length
 
-    return A4_HEIGHT_CM * 1.0 / paper_height
+    return A4_HEIGHT_MM * 1.0 / paper_height
 
 
-def get_px_width_in_cm(img: MatLike) -> float:
+def get_px_width_in_mm(img: MatLike) -> float:
     """
     Returns the width in cm of a pixel of the picture, obtained by
     comparing the A4 paper width (in cm) to the number of pixels of
@@ -55,7 +55,7 @@ def get_px_width_in_cm(img: MatLike) -> float:
 
     paper_width: int = __count_paper_pixels_at_row(img, int(0.5 * h)).length
 
-    return A4_WIDTH_CM * 1.0 / paper_width
+    return A4_WIDTH_MM * 1.0 / paper_width
 
 
 def __count_paper_pixels_at_row(img: MatLike, row_no: int) -> Segment:
