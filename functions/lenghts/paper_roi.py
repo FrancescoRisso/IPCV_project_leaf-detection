@@ -7,7 +7,7 @@ WHITE_THRESHOLD = 120
 NUM_OF_SAMPLES = 30
 
 
-def __detect_lines(img: MatLike) -> Tuple[np.ndarray, MatLike]:
+def __detect_lines(img: MatLike) -> Tuple[MatLike, MatLike]:
     """
     The function uses the hough transform to detect the border of the 
     paper sheet
@@ -51,7 +51,7 @@ def __detect_lines(img: MatLike) -> Tuple[np.ndarray, MatLike]:
     return lines, thImg  
 
 
-def find_paper_margin(thImg: MatLike, img: MatLike) -> Tuple[int, int, int, int]:
+def find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
     """
     The function finds the 4 margins of the paper sheet, using
     a median value.
@@ -62,7 +62,6 @@ def find_paper_margin(thImg: MatLike, img: MatLike) -> Tuple[int, int, int, int]
     PARAMETERS
     ----------
     - thImg: the image thresholded with the WHITE_THRESHOLD value
-    - img: the image, in RGB
 
     ---------------------------------------------------------------------
     OUTPUT
@@ -71,7 +70,7 @@ def find_paper_margin(thImg: MatLike, img: MatLike) -> Tuple[int, int, int, int]
       left, right, top and bottom margin of the paper sheet
     """
 
-    imgH, imgW = img.shape[:2]
+    imgH, imgW = thImg.shape[:2]
     marginL = 0
     marginR = imgW
     marginT = 0
@@ -167,7 +166,7 @@ def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]:
     PARAMETERS
     ----------
     
-    - img: the image, in RGB
+    - img: the image, in BGR
 
     ---------------------------------------------------------------------
     OUTPUT
@@ -190,7 +189,7 @@ def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]:
 
     lines, thImg = __detect_lines(img)
 
-    marginL, marginR, marginT, marginB = find_paper_margin(thImg, img)
+    marginL, marginR, marginT, marginB = find_paper_margin(thImg)
 
 
     def isVertical(points: list[int]) -> int:
