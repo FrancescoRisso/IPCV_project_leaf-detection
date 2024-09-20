@@ -117,6 +117,5 @@ def get_leaf_widths(
         fraction = index * 1.0 / 10
         row = int(leaf_height_certain.corner + fraction * leaf_height_certain.length)
         segments.append(__get_leaf_at_px(img, paper_roi, row))
-        print(row, segments[-1])
 
     return to_tuple_of_11(segments)
