@@ -3,6 +3,7 @@ import cv2
 
 from functions.utils.segment import Segment
 from functions.utils.rectangle import Rectangle
+from functions.utils.leaf import is_px_leaf
 
 
 MIN_LEAF_HUE = 0
@@ -29,14 +30,7 @@ def __is_leaf_in_line(img: MatLike, horiz_segment: Segment, y_coord: int) -> boo
     """
 
     for x in range(horiz_segment.corner, horiz_segment.other_corner()):
-        (hue, sat, val) = img[y_coord, x]
-
-        if (
-            hue >= MIN_LEAF_HUE
-            and hue <= MAX_LEAF_HUE
-            and sat >= MIN_LEAF_SAT
-            and val <= MAX_LEAF_VAL
-        ):
+        if (is_px_leaf(img[y_coord, x])):
             return True
 
     return False
