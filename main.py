@@ -5,7 +5,7 @@ from functions.utils.rectangle import Rectangle
 from functions.utils.segment import Segment
 from functions.utils.image import draw_rectangle
 
-from functions.lengths.leaf_width import get_leaf_widths
+from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
 from functions.lengths.leaf_height import find_leaf_height
 
 
@@ -44,15 +44,17 @@ def main() -> None:
 
             if leaf == "liquidambar":
                 widths = get_leaf_widths(img, roi)
+                leaf_roi = get_leaf_roi(img, roi, widths, h)
             else:
                 widths = get_leaf_widths(img, roi, h)
+                leaf_roi = get_leaf_roi(img, roi, widths, h)
 
             # Save into a test folder the vertical ROI of each dataset image
             for i in range(0, 11):
                 row = int(h.corner + i * 0.1 * h.length)
                 vert = Segment(row, 1)
-                # print(Rectangle(widths[i], vert))
                 img = draw_rectangle(img, Rectangle(widths[i], vert), (0, 0, 255), 5)
+                img = draw_rectangle(img, leaf_roi, (255, 0, 0), 5)
 
             cv2.imwrite(f"test/{leaf}.jpg", img)
 

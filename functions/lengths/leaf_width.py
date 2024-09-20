@@ -27,7 +27,7 @@ def to_tuple_of_11(array: List[T]) -> tuple_of_11[T]:
     ---------------------------------------------------------------------
     OUTPUT
     ------
-    The tuple, if the array had 11 elements. 
+    The tuple, if the array had 11 elements.
     Otherwhise, an error is raised
     """
     if len(array) != 11:
@@ -119,3 +119,74 @@ def get_leaf_widths(
         segments.append(__get_leaf_at_px(img, paper_roi, row))
 
     return to_tuple_of_11(segments)
+
+
+def get_leaf_roi(
+    img: MatLike,
+    paper_roi: Rectangle,
+    widths: tuple_of_11[Segment],
+    leaf_height: Segment | None = None,
+) -> Rectangle:
+    """
+
+
+    ---------------------------------------------------------------------
+    PARAMETERS
+    ----------
+    -BGR
+
+    ---------------------------------------------------------------------
+    OUTPUT
+    ------
+
+    """
+
+    h = find_leaf_height(img, paper_roi) if leaf_height is None else leaf_height
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    # Find the leftmost point of the leaf
+
+    # First, find the leftmost point within the already measured rows
+    corner = widths[0].corner
+
+    for w in widths:
+        if w.corner < corner:
+            corner = w.corner
+
+    # Then, linearly check if there are some more to the left
+    row = h.corner
+    while (row < h.other_corner()) and (corner != paper_roi.get_horiz().corner):
+        while is_px_leaf(img[row, corner - 1]):
+            corner -= 1
+            if corner == paper_roi.get_horiz().corner:
+                # Whenever you reach the ROI border, there's nothing more to search
+                break
+
+            while is_px_leaf(img[row - 1, corner]):
+                row -= 1
+
+        row += 1
+
+    # Same algorithm, but for the right
+    other_corner = widths[0].other_corner()
+
+    for w in widths:
+        if w.other_corner() > other_corner:
+            other_corner = w.other_corner()
+
+    row = h.corner
+    while (row < h.other_corner()) and (
+        other_corner != paper_roi.get_horiz().other_corner()
+    ):
+        while is_px_leaf(img[row, other_corner + 1]):
+            other_corner += 1
+            if other_corner == paper_roi.get_horiz().other_corner():
+                break
+
+            while is_px_leaf(img[row - 1, other_corner]):
+                row -= 1
+
+        row += 1
+
+    return Rectangle(Segment(corner, other_corner - corner), h)
