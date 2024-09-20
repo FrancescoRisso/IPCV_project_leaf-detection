@@ -1,13 +1,12 @@
 import os
 import cv2
-import matplotlib.pyplot as plt
 
 from functions.utils.rectangle import Rectangle
 from functions.utils.segment import Segment
-
 from functions.utils.image import draw_rectangle
 
-from functions.lengths.leaf_height import find_leaf_height, __is_leaf_in_line
+from functions.lengths.leaf_width import get_leaf_widths
+from functions.lengths.leaf_height import find_leaf_height
 
 
 pos = {
@@ -33,26 +32,33 @@ def main() -> None:
     leaves = os.listdir("./dataset")
     for leaf in leaves:
         imgs = os.listdir(f"./dataset/{leaf}")
-        # if leaf != "gaggia":
+        # if leaf != "liquidambar":
         #     continue
 
         for img_name in imgs:
             img = cv2.imread(f"./dataset/{leaf}/{img_name}")
             print(f"./dataset/{leaf}/{img_name}")
-            
-            roi = rois[leaf]    # TODO compute it correctly
-            vert = find_leaf_height(img, roi)
+
+            roi = rois[leaf]  # TODO compute it correctly
+            h = find_leaf_height(img, roi)
+
+            if leaf == "liquidambar":
+                widths = get_leaf_widths(img, roi)
+            else:
+                widths = get_leaf_widths(img, roi, h)
 
             # Save into a test folder the vertical ROI of each dataset image
+            for i in range(0, 11):
+                row = int(h.corner + i * 0.1 * h.length)
+                vert = Segment(row, 1)
+                # print(Rectangle(widths[i], vert))
+                img = draw_rectangle(img, Rectangle(widths[i], vert), (0, 0, 255), 5)
 
-            img = draw_rectangle(img, Rectangle(roi.get_horiz(), vert), (0, 0, 255), 5)
-            cv2.imwrite(f"test/{leaf}_{img_name}", img)
+            cv2.imwrite(f"test/{leaf}.jpg", img)
 
-            # break
-            # return
+            break
+            return
 
-    # plt.show()
-    # input("Done")
 
 
 if __name__ == "__main__":
