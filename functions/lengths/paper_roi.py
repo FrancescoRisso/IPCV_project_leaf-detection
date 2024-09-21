@@ -3,6 +3,8 @@ import numpy as np
 from cv2.typing import MatLike
 from typing import Tuple
 
+from functions.utils.rectangle import Rectangle
+
 WHITE_THRESHOLD = 120
 NUM_OF_SAMPLES = 30
 
@@ -23,8 +25,8 @@ def __detect_lines(img: MatLike) -> Tuple[MatLike, MatLike]:
     ------
     A tuple, composed of:
     - the list of segments, expressed like [x1 y1 x2 y1] (!)
-		note that each element is still a list, of only one element(?),
-		to access the points you must acces line[0] = [x1 y1 x2 y2]
+        note that each element is still a list, of only one element(?),
+        to access the points you must acces line[0] = [x1 y1 x2 y2]
     - the image thresholded with the WHITE_THRESHOLD value
     """
 
@@ -244,3 +246,21 @@ def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]:
     roiB -= padd
 
     return roiL, roiR, roiT, roiB
+
+
+def roi_boundaries_as_rect(roi: tuple[int, int, int, int]) -> Rectangle:
+    """
+    Given the paper ROI as a tuple, returns it as a Rectangle
+
+    ---------------------------------------------------------------------
+    PARAMETERS
+    ----------
+    - roi: the result of the function find_roi_boundaries
+
+    ---------------------------------------------------------------------
+    OUTPUT
+    ------
+    The ROI as a Rectangle
+    """
+
+    return Rectangle.from_values(roi[2], roi[0], roi[1] - roi[0], roi[3] - roi[2])
