@@ -51,7 +51,7 @@ def __detect_lines(img: MatLike) -> Tuple[MatLike, MatLike]:
     return lines, thImg
 
 
-def find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
+def __find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
     """
     The function finds the 4 margins of the paper sheet, using a median
     value.
@@ -191,7 +191,7 @@ def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]:
 
     lines, thImg = __detect_lines(img)
 
-    marginL, marginR, marginT, marginB = find_paper_margin(thImg)
+    marginL, marginR, marginT, marginB = __find_paper_margin(thImg)
 
     def isVertical(points: list[int]) -> int:
         if abs(points[2] - points[0]) < 20:
