@@ -123,12 +123,12 @@ def __find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
     for i in range(NUM_OF_SAMPLES):
 
         deltaY = 0
-        while thImg[0 + deltaY, imgW // 5 + deltaX] == 0:  # N.B. !!! img(y, x)
+        while thImg[0 + deltaY, imgW // 6 + deltaX] == 0:  # N.B. !!! img(y, x)
             deltaY += 1
 
         samples.append(deltaY)
 
-        deltaX += int((3 / 5 * imgW) / NUM_OF_SAMPLES)
+        deltaX += int((4/6 * imgW) / NUM_OF_SAMPLES)
 
     samples.sort()
     marginT = samples[len(samples) // 2]
@@ -140,12 +140,12 @@ def __find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
     for i in range(NUM_OF_SAMPLES):
 
         deltaY = imgH - 1
-        while thImg[0 + deltaY, imgW // 5 + deltaX] == 0:  # N.B. !!! img(y, x)
+        while thImg[0 + deltaY, imgW // 6 + deltaX] == 0:  # N.B. !!! img(y, x)
             deltaY -= 1
 
         samples.append(deltaY)
 
-        deltaX += int((3 / 5 * imgW) / NUM_OF_SAMPLES)
+        deltaX += int((4/6 * imgW) / NUM_OF_SAMPLES)
 
     samples.sort()
     marginB = samples[len(samples) // 2]
@@ -173,13 +173,13 @@ def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]:
     ---------------------------------------------------------------------
     OUTPUT
     ------
-    - roiL, roiR, roiT, roiB: piexl values of the 4 sides of the roi,
+    - roiL, roiR, roiT, roiB: pixel values of the 4 sides of the roi,
         the left, right, top and bottom one. A slice can be calculated
         like img[ roiT:roiB , roiL:roiR ]
     """
 
     # % of the min between height and width of the image that i want my roi to be reduced by
-    PADDING = 0.9
+    PADDING = 1.0
 
     # constant percentual value, relative to the min beween the image width and height
     # it dictates if a segment belongs or not to a border, based on the distance
