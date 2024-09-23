@@ -3,10 +3,11 @@ import cv2
 
 from functions.utils.rectangle import Rectangle
 from functions.utils.segment import Segment
-from functions.utils.image import draw_rectangle
+from functions.utils.leaf import get_leaf_mask
 
 from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
 from functions.lengths.leaf_height import find_leaf_height
+from functions.color.avg_color import get_avg_color
 
 
 pos = {
@@ -32,7 +33,7 @@ def main() -> None:
     leaves = os.listdir("./dataset")
     for leaf in leaves:
         imgs = os.listdir(f"./dataset/{leaf}")
-        # if leaf != "liquidambar":
+        # if leaf != "ulivo":
         #     continue
 
         for img_name in imgs:
@@ -41,22 +42,10 @@ def main() -> None:
 
             roi = rois[leaf]  # TODO compute it correctly
             h = find_leaf_height(img, roi)
+            widths = get_leaf_widths(img, roi, h)
+            leaf_roi = get_leaf_roi(img, roi, widths, h)
 
-            if leaf == "liquidambar":
-                widths = get_leaf_widths(img, roi)
-                leaf_roi = get_leaf_roi(img, roi, widths, h)
-            else:
-                widths = get_leaf_widths(img, roi, h)
-                leaf_roi = get_leaf_roi(img, roi, widths, h)
-
-            # Save into a test folder the vertical ROI of each dataset image
-            for i in range(0, 11):
-                row = int(h.corner + i * 0.1 * h.length)
-                vert = Segment(row, 1)
-                img = draw_rectangle(img, Rectangle(widths[i], vert), (0, 0, 255), 5)
-                img = draw_rectangle(img, leaf_roi, (255, 0, 0), 5)
-
-            cv2.imwrite(f"test/{leaf}.jpg", img)
+            print(get_avg_color(img, leaf_roi))
 
             break
             return
