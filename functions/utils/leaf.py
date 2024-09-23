@@ -1,4 +1,3 @@
-
 from cv2.typing import MatLike
 import cv2
 import numpy as np
