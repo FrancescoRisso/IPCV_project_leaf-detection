@@ -33,7 +33,7 @@ class ImageFeatures:
         "model features" section. It must be an Optional[type]
     - add the getters for the value, that also update the attribute
     - add the getter to the correct location in the dict in to_JSON
-    - add a parser in from_file
+    - add a parser in load_details_from_file
     """
 
     def __init__(self, img: MatLike) -> None:
