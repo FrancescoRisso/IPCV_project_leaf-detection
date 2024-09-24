@@ -20,7 +20,7 @@ def get_px_height_in_mm(img: MatLike) -> float:
     ---------------------------------------------------------------------
     Parameters
     ----------
-    - img: the image to be considered
+    - img: the image to be considered, in HSV
 
     ---------------------------------------------------------------------
     Returns
@@ -44,7 +44,7 @@ def get_px_width_in_mm(img: MatLike) -> float:
     ---------------------------------------------------------------------
     Parameters
     ----------
-    - img: the image to be considered
+    - img: the image to be considered, in HSV
 
     ---------------------------------------------------------------------
     Returns
