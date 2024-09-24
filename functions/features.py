@@ -73,10 +73,6 @@ class ImageFeatures:
         if internals.get("px_width_in_mm", None):
             self.__px_width_in_mm = internals["px_width_in_mm"]
 
-        print(internals)
-        print(internals.get("px_height_in_mm", None))
-        print(bool(internals.get("px_height_in_mm", None)))
-
         if internals.get("px_height_in_mm", None):
             self.__px_height_in_mm = internals["px_height_in_mm"]
 
