@@ -10,6 +10,8 @@ from cv2.typing import MatLike
 A4_WIDTH_MM = 210
 A4_HEIGHT_MM = 297
 
+# TODO: change count functions to more robust ones
+
 
 def get_px_height_in_mm(img: MatLike) -> float:
     """
