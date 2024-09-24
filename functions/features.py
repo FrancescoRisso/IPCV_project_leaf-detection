@@ -4,6 +4,7 @@ from cv2.typing import MatLike
 from typing import Optional, Any
 
 import json
+import cv2
 
 from functions.lengths.px_size import get_px_height_in_mm, get_px_width_in_mm
 
@@ -30,7 +31,7 @@ class ImageFeatures:
     """
 
     def __init__(self, img: MatLike) -> None:
-        # Image
+        # Image, in BGR
         self.__img = img
 
         # Modified flag
@@ -108,7 +109,9 @@ class ImageFeatures:
         if self.__px_width_in_mm:
             return self.__px_width_in_mm
 
-        self.__px_width_in_mm = get_px_width_in_mm(self.__img)
+        self.__px_width_in_mm = get_px_width_in_mm(
+            cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV)
+        )
         self.__modified = True
         return self.__px_width_in_mm
 
@@ -116,6 +119,8 @@ class ImageFeatures:
         if self.__px_height_in_mm:
             return self.__px_height_in_mm
 
-        self.__px_height_in_mm = get_px_height_in_mm(self.__img)
+        self.__px_height_in_mm = get_px_height_in_mm(
+            cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV)
+        )
         self.__modified = True
         return self.__px_height_in_mm
