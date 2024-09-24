@@ -5,15 +5,7 @@ from typing import Optional, Any
 
 import json
 
-# from functions.lengths.px_size import get_px_height_in_mm, get_px_width_in_mm
-
-
-def get_px_height_in_mm(img: MatLike) -> float:
-    return 0.0
-
-
-def get_px_width_in_mm(img: MatLike) -> float:
-    return 0.0
+from functions.lengths.px_size import get_px_height_in_mm, get_px_width_in_mm
 
 
 class ImageFeatures:
