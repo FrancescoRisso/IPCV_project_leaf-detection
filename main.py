@@ -7,6 +7,7 @@ from functions.utils.image import draw_rectangle
 
 from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
 from functions.lengths.leaf_height import find_leaf_height
+from functions.veins.test import extract_veins
 
 
 pos = {
@@ -41,26 +42,13 @@ def main() -> None:
 
             roi = rois[leaf]  # TODO compute it correctly
             h = find_leaf_height(img, roi)
+            widths = get_leaf_widths(img, roi)
+            leaf_roi = get_leaf_roi(img, roi, widths, h)
 
-            if leaf == "liquidambar":
-                widths = get_leaf_widths(img, roi)
-                leaf_roi = get_leaf_roi(img, roi, widths, h)
-            else:
-                widths = get_leaf_widths(img, roi, h)
-                leaf_roi = get_leaf_roi(img, roi, widths, h)
+            extract_veins(img, leaf_roi)
 
-            # Save into a test folder the vertical ROI of each dataset image
-            for i in range(0, 11):
-                row = int(h.corner + i * 0.1 * h.length)
-                vert = Segment(row, 1)
-                img = draw_rectangle(img, Rectangle(widths[i], vert), (0, 0, 255), 5)
-                img = draw_rectangle(img, leaf_roi, (255, 0, 0), 5)
-
-            cv2.imwrite(f"test/{leaf}.jpg", img)
-
-            break
+            # break
             return
-
 
 
 if __name__ == "__main__":
