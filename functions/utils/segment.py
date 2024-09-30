@@ -147,4 +147,4 @@ class Segment:
         ------
         The segment as JSON object (a dict)
         """
-        return {"corner": self.corner, "length": self.length}
+        return {"corner": int(self.corner), "length": int(self.length)}
