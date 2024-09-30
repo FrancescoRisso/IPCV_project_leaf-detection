@@ -6,7 +6,10 @@ from typing import Optional, Any
 import json
 import cv2
 
+from functions.utils.rectangle import Rectangle
+
 from functions.lengths.px_size import get_px_height_in_mm, get_px_width_in_mm
+from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_rect
 
 
 class ImageFeatures:
@@ -40,6 +43,7 @@ class ImageFeatures:
         # Internal values
         self.__px_width_in_mm: Optional[float] = None
         self.__px_height_in_mm: Optional[float] = None
+        self.__paper_roi: Optional[Rectangle] = None
 
         # Model features
 
@@ -49,6 +53,7 @@ class ImageFeatures:
             "internal": {
                 "px_width_in_mm": self.__get_px_width_in_mm(),
                 "px_height_in_mm": self.__get_px_height_in_mm(),
+                "paper_roi": self.__get_paper_roi().to_JSON(),
             },
         }
 
@@ -80,6 +85,9 @@ class ImageFeatures:
 
         if internals.get("px_height_in_mm", None):
             self.__px_height_in_mm = internals["px_height_in_mm"]
+
+        if internals.get("paper_roi", None):
+            self.__paper_roi = Rectangle.from_JSON(internals["paper_roi"])
 
         return self
 
@@ -124,3 +132,14 @@ class ImageFeatures:
         )
         self.__modified = True
         return self.__px_height_in_mm
+
+    def __get_paper_roi(self) -> Rectangle:
+        if self.__paper_roi:
+            return self.__paper_roi
+
+        self.__paper_roi = roi_boundaries_as_rect(find_roi_boundaries(self.__img))
+        self.__modified = True
+        return self.__paper_roi
+
+    def tmp(self) -> Rectangle:
+        return self.__get_paper_roi()
