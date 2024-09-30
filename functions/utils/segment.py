@@ -1,5 +1,4 @@
 from __future__ import annotations
-import json
 
 
 class Segment:
@@ -26,13 +25,13 @@ class Segment:
     def from_JSON(cls, details: dict[str, int]) -> Segment:
         """
         Creates a new segment from a dictionary representation of it
-    
+
         ---------------------------------------------------------------------
         PARAMETERS
         ----------
         - dict: a dictionary formatted as {corner: _float_, length: _float_}
             that represents a segment
-    
+
         ---------------------------------------------------------------------
         OUTPUT
         ------
@@ -41,7 +40,7 @@ class Segment:
 
         if ("corner" not in details) or ("length" not in details):
             raise Exception("Invalid JSON format")
-        
+
         return Segment(details["corner"], details["length"])
 
     def other_corner(self) -> int:
