@@ -30,11 +30,23 @@ def get_px_height_in_mm(img: MatLike) -> float:
     The average height in mm of a pixel of the picture
     """
 
+    h = img.shape[0]
     w = img.shape[1]
 
     paper_height: int = count_paper_pixels_at_col(img, int(0.5 * w)).length
 
-    return A4_HEIGHT_MM * 1.0 / paper_height
+    res = A4_HEIGHT_MM * 1.0 / paper_height
+    max_reasonable = A4_HEIGHT_MM * 2.0 / h
+
+    # A reasonable maximum is the result that would be obtained when the
+    # paper only occupies half of the picture
+
+    if res > max_reasonable:
+        # there is something wrong, reduce saturation and re-evaluate
+        img[:, :, 1] = img[:, :, 1] / 2  # type: ignore
+        return get_px_height_in_mm(img)
+
+    return res
 
 
 def get_px_width_in_mm(img: MatLike) -> float:
@@ -55,7 +67,19 @@ def get_px_width_in_mm(img: MatLike) -> float:
     """
 
     h = img.shape[0]
+    w = img.shape[1]
 
     paper_width: int = count_paper_pixels_at_row(img, int(0.5 * h)).length
 
-    return A4_WIDTH_MM * 1.0 / paper_width
+    res = A4_WIDTH_MM * 1.0 / paper_width
+    max_reasonable = A4_WIDTH_MM * 2.0 / w
+
+    # A reasonable maximum is the result that would be obtained when the
+    # paper only occupies half of the picture
+
+    if res > max_reasonable:
+        # there is something wrong, reduce saturation and re-evaluate
+        img[:, :, 1] = img[:, :, 1] / 2  # type: ignore
+        return get_px_width_in_mm(img)
+
+    return res
