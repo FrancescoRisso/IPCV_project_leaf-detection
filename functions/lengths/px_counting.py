@@ -16,7 +16,7 @@ def count_paper_pixels_at_row(img: MatLike, row_no: int) -> Segment:
     ---------------------------------------------------------------------
     Parameters
     ----------
-    - img: the image to be considered, as HSV
+    - img: the image to be considered, in HSV
     - row_no: the index of the row to be considered
 
     ---------------------------------------------------------------------
@@ -37,7 +37,7 @@ def count_paper_pixels_at_col(img: MatLike, col_no: int) -> Segment:
     ---------------------------------------------------------------------
     Parameters
     ----------
-    - img: the image to be considered
+    - img: the image to be considered, in HSV
     - col_no: the index of the column to be considered
 
     ---------------------------------------------------------------------
@@ -62,7 +62,7 @@ def __count_paper_pixels(img: MatLike) -> Segment:
 
     Parameters
     ----------
-    - img: the row of the image to be considered
+    - img: the row of the image to be considered, in HSV
 
     ---------------------------------------------------------------------
     Returns
