@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
 from cv2.typing import MatLike
+import math
 from typing import Tuple
 
 from functions.utils.rectangle import Rectangle
 
-WHITE_THRESHOLD = 120
+WHITE_THRESHOLD = 80 
 NUM_OF_SAMPLES = 30
 
 
@@ -29,10 +30,15 @@ def __detect_lines(img: MatLike) -> Tuple[MatLike, MatLike]:
         to access the points you must acces line[0] = [x1 y1 x2 y2]
     - the image thresholded with the WHITE_THRESHOLD value
     """
-
+    '''
     imgG = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     imgG = cv2.blur(imgG, (8, 8))
-    thImg = cv2.threshold(imgG, WHITE_THRESHOLD, 255, cv2.THRESH_BINARY)[1]
+    ret1, thImg = cv2.threshold(imgG, WHITE_THRESHOLD, 255, cv2.THRESH_BINARY)'''
+
+    imgHLS = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+
+    thImg = cv2.inRange(imgHLS, np.array([0,125,0]), np.array([255,255,255]))
+
 
     ker1 = np.ones((26, 26), np.uint8)
     thImg = cv2.erode(thImg, ker1)
@@ -49,6 +55,8 @@ def __detect_lines(img: MatLike) -> Tuple[MatLike, MatLike]:
     lines = cv2.HoughLinesP(contour, 1, np.pi / 2, 50, minLineLength=150, maxLineGap=80)
     # ! note that line is still a list, of only one element (?), to access
     #   the points you must acces line[0] = [x1 y1 x2 y2]
+
+    
 
     return lines, thImg
 
@@ -89,7 +97,7 @@ def __find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
     for i in range(NUM_OF_SAMPLES):
 
         deltaX = 0
-        while thImg[imgH // 5 + deltaY, 0 + deltaX] == 0:  # N.B. !!! img(y, x)
+        while ( thImg[imgH // 5 + deltaY, 0 + deltaX] == 0 ) and (deltaX < imgW//2) :  # N.B. !!! img(y, x)
             deltaX += 1
 
         samples.append(deltaX)
@@ -106,7 +114,7 @@ def __find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
     for i in range(NUM_OF_SAMPLES):
 
         deltaX = imgW - 1
-        while thImg[imgH // 5 + deltaY, 0 + deltaX] == 0:  # N.B. !!! img(y, x)
+        while( thImg[imgH // 5 + deltaY, 0 + deltaX] == 0 ) and (deltaX > imgW//2):  # N.B. !!! img(y, x)
             deltaX -= 1
 
         samples.append(deltaX)
@@ -123,7 +131,7 @@ def __find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
     for i in range(NUM_OF_SAMPLES):
 
         deltaY = 0
-        while thImg[0 + deltaY, imgW // 6 + deltaX] == 0:  # N.B. !!! img(y, x)
+        while ( thImg[0 + deltaY, imgW // 6 + deltaX] == 0 ) and (deltaY < 2*imgH//3):  # N.B. !!! img(y, x)
             deltaY += 1
 
         samples.append(deltaY)
@@ -140,7 +148,7 @@ def __find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
     for i in range(NUM_OF_SAMPLES):
 
         deltaY = imgH - 1
-        while thImg[0 + deltaY, imgW // 6 + deltaX] == 0:  # N.B. !!! img(y, x)
+        while ( thImg[0 + deltaY, imgW // 6 + deltaX] == 0 ) and (deltaY > 2*imgH//3):  # N.B. !!! img(y, x)
             deltaY -= 1
 
         samples.append(deltaY)
@@ -179,7 +187,7 @@ def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]:
     """
 
     # % of the min between height and width of the image that i want my roi to be reduced by
-    PADDING = 1.0
+    PADDING = 5
 
     # constant percentual value, relative to the min beween the image width and height
     # it dictates if a segment belongs or not to a border, based on the distance
@@ -196,12 +204,12 @@ def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]:
     marginL, marginR, marginT, marginB = __find_paper_margin(thImg)
 
     def isVertical(points: list[int]) -> int:
-        if abs(points[2] - points[0]) < 20:
+        if abs(points[2] - points[0]) < 40:
             return 1
         return 0
 
     def isHorizontal(points: list[int]) -> int:
-        if abs(points[3] - points[1]) < 20:
+        if abs(points[3] - points[1]) < 40:
             return 1
         return 0
 
