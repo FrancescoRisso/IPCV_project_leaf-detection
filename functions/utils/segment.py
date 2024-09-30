@@ -139,13 +139,13 @@ class Segment:
         else:
             raise Exception(f"{half} is not the first or second half of {self}")
 
-    def to_JSON(self) -> str:
+    def to_JSON(self) -> dict[str, int]:
         """
-        Converts the segment to a JSON string
+        Converts the segment to a JSON object
 
         ---------------------------------------------------------------------
         OUTPUT
         ------
-        The segment as JSON string
+        The segment as JSON object (a dict)
         """
-        return json.dumps({"corner": self.corner, "length": self.length})
+        return {"corner": self.corner, "length": self.length}
