@@ -187,7 +187,7 @@ def find_roi_boundaries(img: MatLike) -> Tuple[int, int, int, int]:
     """
 
     # % of the min between height and width of the image that i want my roi to be reduced by
-    PADDING = 5
+    PADDING = 2
 
     # constant percentual value, relative to the min beween the image width and height
     # it dictates if a segment belongs or not to a border, based on the distance
