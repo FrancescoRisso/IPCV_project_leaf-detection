@@ -1,1 +1,1 @@
-{"features": {}, "internal": {"px_width_in_mm": 0.04129793510324484, "px_height_in_mm": 0.04142259414225941}}
+{"features": {"height": 138.76569037656904}, "internal": {"px_width_in_mm": 0.04129793510324484, "px_height_in_mm": 0.04142259414225941, "paper_roi": {"horiz": {"corner": 183, "length": 4734}, "vert": {"corner": 1033, "length": 6890}}, "height_segment": {"corner": 2479, "length": 3350}}}
