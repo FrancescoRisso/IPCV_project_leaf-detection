@@ -140,6 +140,3 @@ class ImageFeatures:
         self.__paper_roi = roi_boundaries_as_rect(find_roi_boundaries(self.__img))
         self.__modified = True
         return self.__paper_roi
-
-    def tmp(self) -> Rectangle:
-        return self.__get_paper_roi()
