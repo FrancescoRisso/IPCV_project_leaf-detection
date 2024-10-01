@@ -7,9 +7,11 @@ import json
 import cv2
 
 from functions.utils.rectangle import Rectangle
+from functions.utils.segment import Segment
 
 from functions.lengths.px_size import get_px_height_in_mm, get_px_width_in_mm
 from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_rect
+from functions.lengths.leaf_height import find_leaf_height
 
 
 class ImageFeatures:
@@ -44,16 +46,19 @@ class ImageFeatures:
         self.__px_width_in_mm: Optional[float] = None
         self.__px_height_in_mm: Optional[float] = None
         self.__paper_roi: Optional[Rectangle] = None
+        self.__height_segment: Optional[Segment] = None
 
         # Model features
+        self.__height: Optional[float] = None
 
     def to_JSON(self) -> str:
         res: dict[str, dict[str, Any]] = {
-            "features": {},
+            "features": {"height": self.__get_leaf_height()},
             "internal": {
                 "px_width_in_mm": self.__get_px_width_in_mm(),
                 "px_height_in_mm": self.__get_px_height_in_mm(),
                 "paper_roi": self.__get_paper_roi().to_JSON(),
+                "height_segment": self.__get_leaf_height_segment().to_JSON(),
             },
         }
 
@@ -88,6 +93,12 @@ class ImageFeatures:
 
         if internals.get("paper_roi", None):
             self.__paper_roi = Rectangle.from_JSON(internals["paper_roi"])
+
+        if internals.get("height_segment", None):
+            self.__height_segment = Segment.from_JSON(internals["height_segment"])
+
+        if features.get("height", None):
+            self.__height = features["height"]
 
         return self
 
@@ -140,3 +151,20 @@ class ImageFeatures:
         self.__paper_roi = roi_boundaries_as_rect(find_roi_boundaries(self.__img))
         self.__modified = True
         return self.__paper_roi
+
+    def __get_leaf_height_segment(self) -> Segment:
+        if self.__height_segment:
+            return self.__height_segment
+
+        self.__height_segment = find_leaf_height(self.__img, self.__get_paper_roi())
+        self.__modified = True
+        return self.__height_segment
+
+    def __get_leaf_height(self) -> float:
+        if self.__height:
+            return self.__height
+
+        height_px = self.__get_leaf_height_segment().length
+        self.__height = height_px * self.__get_px_height_in_mm()
+        self.__modified = True
+        return self.__height
