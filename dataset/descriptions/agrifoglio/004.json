@@ -1,1 +1,1 @@
-{"features": {"height": 87.45687091017251}, "internal": {"px_width_in_mm": 0.08775595486836607, "px_height_in_mm": 0.0883402736466389, "paper_roi": {"horiz": {"corner": 380, "length": 2228}, "vert": {"corner": 395, "length": 3222}}, "height_segment": {"corner": 1433, "length": 990}}}
+{"features": {"height": 87.43086529884032}, "internal": {"px_width_in_mm": 0.08775595486836607, "px_height_in_mm": 0.08831400535236396, "paper_roi": {"horiz": {"corner": 380, "length": 2228}, "vert": {"corner": 395, "length": 3222}}, "height_segment": {"corner": 1433, "length": 990}}}
