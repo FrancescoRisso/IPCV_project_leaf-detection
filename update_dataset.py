@@ -9,7 +9,7 @@ import threading
 def update_dataset() -> None:
     print(f"Updating dataset...")
 
-    leaves = os.listdir("./dataset")
+    leaves = os.listdir("./dataset/images")
     threads = []
 
     for leaf in leaves:
@@ -25,15 +25,17 @@ def update_dataset() -> None:
 
 
 def process_plant(leaf: str) -> None:
-    files_list = os.listdir(f"./dataset/{leaf}")
+    files_list = os.listdir(f"./dataset/images/{leaf}")
+
+    # If the descriptions folder does not exist, create it
+    if not os.path.exists(f"./dataset/descriptions/{leaf}"):
+        os.makedirs(f"./dataset/descriptions/{leaf}")
 
     for img_file_name in files_list:
-        # Do not process json files
-        if img_file_name.endswith(".json"):
-            continue
-
-        img_path = f"./dataset/{leaf}/{img_file_name}"
-        json_path = f"./dataset/{leaf}/{os.path.splitext(img_file_name)[0]}.json"
+        img_path = f"./dataset/images/{leaf}/{img_file_name}"
+        json_path = (
+            f"./dataset/descriptions/{leaf}/{os.path.splitext(img_file_name)[0]}.json"
+        )
 
         img = cv2.imread(img_path)
         img_features = ImageFeatures(img)
