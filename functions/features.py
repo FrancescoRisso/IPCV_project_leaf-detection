@@ -9,7 +9,7 @@ import cv2
 from functions.utils.rectangle import Rectangle
 from functions.utils.segment import Segment
 
-from functions.lengths.px_size import get_px_height_in_mm, get_px_width_in_mm
+from functions.lengths.px_size import get_px_size
 from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_rect
 from functions.lengths.leaf_height import find_leaf_height
 
@@ -128,8 +128,8 @@ class ImageFeatures:
         if self.__px_width_in_mm:
             return self.__px_width_in_mm
 
-        self.__px_width_in_mm = get_px_width_in_mm(
-            cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV)
+        self.__px_width_in_mm = get_px_size(
+            cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV), self.__get_paper_roi(), False
         )
         self.__modified = True
         return self.__px_width_in_mm
@@ -138,8 +138,8 @@ class ImageFeatures:
         if self.__px_height_in_mm:
             return self.__px_height_in_mm
 
-        self.__px_height_in_mm = get_px_height_in_mm(
-            cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV)
+        self.__px_height_in_mm = get_px_size(
+            cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV), self.__get_paper_roi(), True
         )
         self.__modified = True
         return self.__px_height_in_mm
