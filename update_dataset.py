@@ -21,7 +21,7 @@ def update_dataset() -> None:
     for thread in threads:
         thread.join()
 
-    print(f"Dataset update complete!")
+    print(f"\nDataset update complete!")
 
 
 def process_plant(leaf: str) -> None:
@@ -52,6 +52,8 @@ def process_plant(leaf: str) -> None:
         img_features.store_to_file(json_path)
 
     # TODO compute plant summary and percentages
+
+    print(f'Dataset for plant "{leaf}" is now updated.')
 
 
 if __name__ == "__main__":
