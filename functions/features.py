@@ -31,6 +31,10 @@ class ImageFeatures:
         "model features" section. It must be an Optional[type]
     - add the getters for the value, that also update the attribute and
         set self.__modified to True if the value was changed
+    - for any ImageFeature.__get... you call in the getter you added,
+        go in that function and set as None the attribute you are working
+        on, in order to ensure that your value is not cached if a
+        dependency is changed
     - add the getter to the correct location in the dict in to_JSON
     - add a parser in load_details_from_file
     """
@@ -142,6 +146,7 @@ class ImageFeatures:
             cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV), self.__get_paper_roi(), True
         )
         self.__modified = True
+        self.__height = None
         return self.__px_height_in_mm
 
     def __get_paper_roi(self) -> Rectangle:
@@ -150,6 +155,9 @@ class ImageFeatures:
 
         self.__paper_roi = roi_boundaries_as_rect(find_roi_boundaries(self.__img))
         self.__modified = True
+        self.__px_width_in_mm = None
+        self.__px_height_in_mm = None
+        self.__height_segment = None
         return self.__paper_roi
 
     def __get_leaf_height_segment(self) -> Segment:
@@ -158,6 +166,7 @@ class ImageFeatures:
 
         self.__height_segment = find_leaf_height(self.__img, self.__get_paper_roi())
         self.__modified = True
+        self.__height = None
         return self.__height_segment
 
     def __get_leaf_height(self) -> float:
