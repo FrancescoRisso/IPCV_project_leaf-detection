@@ -1,50 +1,13 @@
 from cv2.typing import MatLike
 import cv2
 
+from custom_types.tuple_of_11 import tuple_of_11, to_tuple_of_11
+
 from functions.utils.rectangle import Rectangle
 from functions.utils.segment import Segment
 from functions.utils.leaf import is_px_leaf
 
 from functions.lengths.leaf_height import find_leaf_height
-
-from typing import TypeVar, List
-
-
-T = TypeVar("T")
-type tuple_of_11[T] = tuple[T, T, T, T, T, T, T, T, T, T, T]
-
-
-def to_tuple_of_11(array: List[T]) -> tuple_of_11[T]:
-    """
-    Equivalent of python's tuple() function, to convert an array of 11
-    items into a tuple_of_11
-
-    ---------------------------------------------------------------------
-    PARAMETERS
-    ----------
-    - array: the array to be converted
-
-    ---------------------------------------------------------------------
-    OUTPUT
-    ------
-    The tuple, if the array had 11 elements.
-    Otherwhise, an error is raised
-    """
-    if len(array) != 11:
-        raise ValueError("Array must have exactly 11 elements")
-    return (
-        array[0],
-        array[1],
-        array[2],
-        array[3],
-        array[4],
-        array[5],
-        array[6],
-        array[7],
-        array[8],
-        array[9],
-        array[10],
-    )
 
 
 def __get_leaf_at_px(img: MatLike, paper_roi: Rectangle, row: int) -> Segment:
@@ -125,10 +88,10 @@ def get_leaf_roi(
     img: MatLike,
     paper_roi: Rectangle,
     widths: tuple_of_11[Segment],
-    leaf_height: Segment
+    leaf_height: Segment,
 ) -> Rectangle:
     """
-	Returns the smallest rectangular region that includes the whole leaf
+    Returns the smallest rectangular region that includes the whole leaf
 
     ---------------------------------------------------------------------
     PARAMETERS
@@ -137,12 +100,12 @@ def get_leaf_roi(
     - paper_roi: a region where there are only paper and leaf
     - widths: the width measurements of every 10% of leaf height
     - leaf_height: the segment that identifies the vetical region where
-		the leaf is
+        the leaf is
 
     ---------------------------------------------------------------------
     OUTPUT
     ------
-	The smallest rectangle that fully includes the leaf
+    The smallest rectangle that fully includes the leaf
     """
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -158,7 +121,9 @@ def get_leaf_roi(
 
     # Then, linearly check if there are some more to the left
     row = leaf_height.corner
-    while (row < leaf_height.other_corner()) and (corner != paper_roi.get_horiz().corner):
+    while (row < leaf_height.other_corner()) and (
+        corner != paper_roi.get_horiz().corner
+    ):
         while is_px_leaf(img[row, corner - 1]):
             corner -= 1
             if corner == paper_roi.get_horiz().corner:
