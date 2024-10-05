@@ -16,7 +16,7 @@ from functions.utils.segment import Segment
 from functions.lengths.px_size import get_px_size
 from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_rect
 from functions.lengths.leaf_height import find_leaf_height
-from functions.lengths.leaf_width import get_leaf_widths
+from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
 
 
 class ImageFeatures:
@@ -57,10 +57,11 @@ class ImageFeatures:
         self.__paper_roi: Optional[Rectangle] = None
         self.__height_segment: Optional[Segment] = None
         self.__widths_segments: Optional[tuple_of_11[Segment]] = None
+        self.__leaf_max_width: Optional[Segment] = None
 
         # Model features
         self.__height: Optional[float] = None
-        self.__width_0_perc_h: Optional[tuple_of_11[float]] = None
+        # self.__width_0_perc_h: Optional[tuple_of_11[float]] = None
 
     def to_JSON(self) -> str:
         width_segments = tuple_of_11_to_python_tuple(self.__get_widths_segments())
@@ -74,6 +75,7 @@ class ImageFeatures:
                 "paper_roi": self.__get_paper_roi().to_JSON(),
                 "height_segment": self.__get_leaf_height_segment().to_JSON(),
                 "widths": width_segments_json,
+                "max_width": self.__get_leaf_max_width_segment().to_JSON(),
             },
         }
 
@@ -175,6 +177,7 @@ class ImageFeatures:
         self.__px_height_in_mm = None
         self.__height_segment = None
         self.__widths_segments = None
+        self.__leaf_max_width = None
         return self.__paper_roi
 
     def __get_leaf_height_segment(self) -> Segment:
@@ -185,6 +188,7 @@ class ImageFeatures:
         self.__modified = True
         self.__height = None
         self.__widths_segments = None
+        self.__leaf_max_width = None
         return self.__height_segment
 
     def __get_leaf_height(self) -> float:
@@ -204,4 +208,18 @@ class ImageFeatures:
             self.__img, self.__get_paper_roi(), self.__get_leaf_height_segment()
         )
         self.__modified = True
+        self.__leaf_max_width = None
         return self.__widths_segments
+
+    def __get_leaf_max_width_segment(self) -> Segment:
+        if self.__leaf_max_width:
+            return self.__leaf_max_width
+
+        self.__leaf_max_width = get_leaf_roi(
+            self.__img,
+            self.__get_paper_roi(),
+            self.__get_widths_segments(),
+            self.__get_leaf_height_segment(),
+        ).get_horiz()
+        self.__modified = True
+        return self.__leaf_max_width
