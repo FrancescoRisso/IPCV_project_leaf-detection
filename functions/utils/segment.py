@@ -21,6 +21,28 @@ class Segment:
             return NotImplemented
         return (self.corner == other.corner) and (self.length == other.length)
 
+    @classmethod
+    def from_JSON(cls, details: dict[str, int]) -> Segment:
+        """
+        Creates a new segment from a dictionary representation of it
+
+        ---------------------------------------------------------------------
+        PARAMETERS
+        ----------
+        - dict: a dictionary formatted as {corner: _float_, length: _float_}
+            that represents a segment
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        The same segment, but as a Segment class
+        """
+
+        if ("corner" not in details) or ("length" not in details):
+            raise Exception("Invalid JSON format")
+
+        return Segment(details["corner"], details["length"])
+
     def other_corner(self) -> int:
         """
         Returns the (monodirectional) coordinate of the end point of the
@@ -48,7 +70,7 @@ class Segment:
         ------
         The intersection
         """
-        
+
         corner = max(self.corner, other.corner)
         other_corner = min(self.other_corner(), other.other_corner())
         return Segment(corner, other_corner - corner)
@@ -115,3 +137,14 @@ class Segment:
             return self.first_half()
         else:
             raise Exception(f"{half} is not the first or second half of {self}")
+
+    def to_JSON(self) -> dict[str, int]:
+        """
+        Converts the segment to a JSON object
+
+        ---------------------------------------------------------------------
+        OUTPUT
+        ------
+        The segment as JSON object (a dict)
+        """
+        return {"corner": int(self.corner), "length": int(self.length)}
