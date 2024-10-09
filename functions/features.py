@@ -17,6 +17,7 @@ from functions.lengths.px_size import get_px_size
 from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_rect
 from functions.lengths.leaf_height import find_leaf_height
 from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
+from functions.color.avg_color import get_avg_color
 
 
 class ImageFeatures:
@@ -63,6 +64,7 @@ class ImageFeatures:
         self.__height: Optional[float] = None
         self.__max_width: Optional[float] = None
         self.__widths: Optional[tuple_of_11[float]] = None
+        self.__avg_color_hsv: Optional[tuple[int, int, int]] = None
 
     def to_JSON(self) -> str:
         width_segments = tuple_of_11_to_python_tuple(self.__get_widths_segments())
@@ -73,6 +75,7 @@ class ImageFeatures:
                 "height": self.__get_leaf_height(),
                 "max_width": self.__get_leaf_max_width(),
                 "widths": list(tuple_of_11_to_python_tuple(self.__get_widths())),
+                "avg_color": self.__get_avg_color(),
             },
             "internal": {
                 "px_width_in_mm": self.__get_px_width_in_mm(),
@@ -137,6 +140,9 @@ class ImageFeatures:
 
         if features.get("widths", None):
             self.__widths = to_tuple_of_11(features["widths"])
+
+        if features.get("avg_color", None):
+            self.__avg_color_hsv = features["avg_color"]
 
         return self
 
@@ -206,6 +212,7 @@ class ImageFeatures:
         self.__height = None
         self.__widths_segments = None
         self.__leaf_max_width = None
+        self.__avg_color_hsv = None
         return self.__height_segment
 
     def __get_leaf_height(self) -> float:
@@ -242,6 +249,7 @@ class ImageFeatures:
         self.__modified = True
         self.__max_width = None
         self.__widths = None
+        self.__avg_color_hsv = None
         return self.__leaf_max_width
 
     def __get_leaf_max_width(self) -> float:
@@ -267,3 +275,18 @@ class ImageFeatures:
         self.__modified = True
         self.__leaf_max_width = None
         return self.__widths
+
+    def __get_leaf_roi(self) -> Rectangle:
+        # Invalidate the attributes in the two subcalls
+        return Rectangle(
+            self.__get_leaf_max_width_segment(), self.__get_leaf_height_segment()
+        )
+
+    def __get_avg_color(self) -> tuple[int, int, int]:
+        if self.__avg_color_hsv:
+            return self.__avg_color_hsv
+
+        self.__avg_color_hsv = get_avg_color(self.__img, self.__get_leaf_roi())
+
+        self.__modified = True
+        return self.__avg_color_hsv
