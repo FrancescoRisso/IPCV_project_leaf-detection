@@ -1,2 +1,3 @@
 [tool.mypy]
 strict = true
+enable_incomplete_feature = "NewGenericSyntax"

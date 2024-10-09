@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from cv2.typing import MatLike
 from typing import Optional, Any
+from custom_types.tuple_of_11 import tuple_of_11
+from custom_types.tuple_of_11 import to_tuple_of_11
+from custom_types.tuple_of_11 import tuple_of_11_to_python_tuple
+
 
 import json
 import cv2
@@ -12,6 +16,7 @@ from functions.utils.segment import Segment
 from functions.lengths.px_size import get_px_size
 from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_rect
 from functions.lengths.leaf_height import find_leaf_height
+from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
 
 
 class ImageFeatures:
@@ -51,18 +56,31 @@ class ImageFeatures:
         self.__px_height_in_mm: Optional[float] = None
         self.__paper_roi: Optional[Rectangle] = None
         self.__height_segment: Optional[Segment] = None
+        self.__widths_segments: Optional[tuple_of_11[Segment]] = None
+        self.__leaf_max_width: Optional[Segment] = None
 
         # Model features
         self.__height: Optional[float] = None
+        self.__max_width: Optional[float] = None
+        self.__widths: Optional[tuple_of_11[float]] = None
 
     def to_JSON(self) -> str:
+        width_segments = tuple_of_11_to_python_tuple(self.__get_widths_segments())
+        width_segments_json = [w.to_JSON() for w in width_segments]
+
         res: dict[str, dict[str, Any]] = {
-            "features": {"height": self.__get_leaf_height()},
+            "features": {
+                "height": self.__get_leaf_height(),
+                "max_width": self.__get_leaf_max_width(),
+                "widths": list(tuple_of_11_to_python_tuple(self.__get_widths())),
+            },
             "internal": {
                 "px_width_in_mm": self.__get_px_width_in_mm(),
                 "px_height_in_mm": self.__get_px_height_in_mm(),
                 "paper_roi": self.__get_paper_roi().to_JSON(),
                 "height_segment": self.__get_leaf_height_segment().to_JSON(),
+                "widths": width_segments_json,
+                "max_width": self.__get_leaf_max_width_segment().to_JSON(),
             },
         }
 
@@ -101,8 +119,21 @@ class ImageFeatures:
         if internals.get("height_segment", None):
             self.__height_segment = Segment.from_JSON(internals["height_segment"])
 
+        if internals.get("widths", None):
+            self.__widths_segments = to_tuple_of_11(
+                [Segment.from_JSON(segm) for segm in internals["widths"]]
+            )
+
+        # Features
+
         if features.get("height", None):
             self.__height = features["height"]
+
+        if features.get("max_width", None):
+            self.__max_width = features["max_width"]
+
+        if features.get("width", None):
+            self.__width = to_tuple_of_11(features["width"])
 
         return self
 
@@ -136,6 +167,7 @@ class ImageFeatures:
             cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV), self.__get_paper_roi(), False
         )
         self.__modified = True
+        self.__max_width = None
         return self.__px_width_in_mm
 
     def __get_px_height_in_mm(self) -> float:
@@ -158,6 +190,8 @@ class ImageFeatures:
         self.__px_width_in_mm = None
         self.__px_height_in_mm = None
         self.__height_segment = None
+        self.__widths_segments = None
+        self.__leaf_max_width = None
         return self.__paper_roi
 
     def __get_leaf_height_segment(self) -> Segment:
@@ -167,6 +201,8 @@ class ImageFeatures:
         self.__height_segment = find_leaf_height(self.__img, self.__get_paper_roi())
         self.__modified = True
         self.__height = None
+        self.__widths_segments = None
+        self.__leaf_max_width = None
         return self.__height_segment
 
     def __get_leaf_height(self) -> float:
@@ -177,3 +213,54 @@ class ImageFeatures:
         self.__height = height_px * self.__get_px_height_in_mm()
         self.__modified = True
         return self.__height
+
+    def __get_widths_segments(self) -> tuple_of_11[Segment]:
+        if self.__widths_segments:
+            return self.__widths_segments
+
+        self.__widths_segments = get_leaf_widths(
+            self.__img, self.__get_paper_roi(), self.__get_leaf_height_segment()
+        )
+        self.__modified = True
+        self.__leaf_max_width = None
+        self.__widths = None
+        return self.__widths_segments
+
+    def __get_leaf_max_width_segment(self) -> Segment:
+        if self.__leaf_max_width:
+            return self.__leaf_max_width
+
+        self.__leaf_max_width = get_leaf_roi(
+            self.__img,
+            self.__get_paper_roi(),
+            self.__get_widths_segments(),
+            self.__get_leaf_height_segment(),
+        ).get_horiz()
+        self.__modified = True
+        self.__max_width = None
+        self.__widths = None
+        return self.__leaf_max_width
+
+    def __get_leaf_max_width(self) -> float:
+        if self.__max_width:
+            return self.__max_width
+
+        width_px = self.__get_leaf_max_width_segment().length
+        self.__max_width = width_px * self.__get_px_width_in_mm()
+        self.__modified = True
+        return self.__max_width
+
+    def __get_widths(self) -> tuple_of_11[float]:
+        if self.__widths:
+            return self.__widths
+
+        maxw = self.__get_leaf_max_width_segment().length
+        widths_segm = tuple_of_11_to_python_tuple(self.__get_widths_segments())
+
+        widths_perc_list = [segm.length * 1.0 / maxw for segm in widths_segm]
+
+        self.__widths = to_tuple_of_11(widths_perc_list)
+
+        self.__modified = True
+        self.__leaf_max_width = None
+        return self.__widths
