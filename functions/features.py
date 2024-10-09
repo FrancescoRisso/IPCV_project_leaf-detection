@@ -61,6 +61,7 @@ class ImageFeatures:
 
         # Model features
         self.__height: Optional[float] = None
+        self.__max_width: Optional[float] = None
         # self.__width_0_perc_h: Optional[tuple_of_11[float]] = None
 
     def to_JSON(self) -> str:
@@ -68,7 +69,10 @@ class ImageFeatures:
         width_segments_json = [w.to_JSON() for w in width_segments]
 
         res: dict[str, dict[str, Any]] = {
-            "features": {"height": self.__get_leaf_height()},
+            "features": {
+                "height": self.__get_leaf_height(),
+                "max_width": self.__get_leaf_max_width(),
+            },
             "internal": {
                 "px_width_in_mm": self.__get_px_width_in_mm(),
                 "px_height_in_mm": self.__get_px_height_in_mm(),
@@ -114,13 +118,18 @@ class ImageFeatures:
         if internals.get("height_segment", None):
             self.__height_segment = Segment.from_JSON(internals["height_segment"])
 
-        if features.get("height", None):
-            self.__height = features["height"]
-
         if internals.get("widths", None):
             self.__widths_segments = to_tuple_of_11(
                 [Segment.from_JSON(segm) for segm in internals["widths"]]
             )
+
+        # Features
+
+        if features.get("height", None):
+            self.__height = features["height"]
+
+        if features.get("max_width", None):
+            self.__max_width = features["max_width"]
 
         return self
 
@@ -154,6 +163,7 @@ class ImageFeatures:
             cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV), self.__get_paper_roi(), False
         )
         self.__modified = True
+        self.__max_width = None
         return self.__px_width_in_mm
 
     def __get_px_height_in_mm(self) -> float:
@@ -222,4 +232,14 @@ class ImageFeatures:
             self.__get_leaf_height_segment(),
         ).get_horiz()
         self.__modified = True
+        self.__max_width = None
         return self.__leaf_max_width
+
+    def __get_leaf_max_width(self) -> float:
+        if self.__max_width:
+            return self.__max_width
+
+        width_px = self.__get_leaf_max_width_segment().length
+        self.__max_width = width_px * self.__get_px_width_in_mm()
+        self.__modified = True
+        return self.__max_width
