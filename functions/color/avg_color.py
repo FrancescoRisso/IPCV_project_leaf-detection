@@ -6,7 +6,7 @@ from functions.utils.image import crop_image
 from functions.utils.leaf import get_leaf_mask
 
 
-def get_avg_color(img: MatLike, leaf_roi: Rectangle) -> tuple[float, float, float]:
+def get_avg_color(img: MatLike, leaf_roi: Rectangle) -> tuple[int, int, int]:
     """
     Returns the color obtained as the average color of all the leaf px
 
@@ -29,4 +29,4 @@ def get_avg_color(img: MatLike, leaf_roi: Rectangle) -> tuple[float, float, floa
 
     avg = cv2.mean(img, mask)
 
-    return (avg[0], avg[1], avg[2])
+    return (int(avg[0]), int(avg[1]), int(avg[2]))
