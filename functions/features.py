@@ -62,7 +62,7 @@ class ImageFeatures:
         # Model features
         self.__height: Optional[float] = None
         self.__max_width: Optional[float] = None
-        # self.__width_0_perc_h: Optional[tuple_of_11[float]] = None
+        self.__widths: Optional[tuple_of_11[float]] = None
 
     def to_JSON(self) -> str:
         width_segments = tuple_of_11_to_python_tuple(self.__get_widths_segments())
@@ -72,6 +72,7 @@ class ImageFeatures:
             "features": {
                 "height": self.__get_leaf_height(),
                 "max_width": self.__get_leaf_max_width(),
+                "widths": list(tuple_of_11_to_python_tuple(self.__get_widths())),
             },
             "internal": {
                 "px_width_in_mm": self.__get_px_width_in_mm(),
@@ -130,6 +131,9 @@ class ImageFeatures:
 
         if features.get("max_width", None):
             self.__max_width = features["max_width"]
+
+        if features.get("width", None):
+            self.__width = to_tuple_of_11(features["width"])
 
         return self
 
@@ -219,6 +223,7 @@ class ImageFeatures:
         )
         self.__modified = True
         self.__leaf_max_width = None
+        self.__widths = None
         return self.__widths_segments
 
     def __get_leaf_max_width_segment(self) -> Segment:
@@ -233,6 +238,7 @@ class ImageFeatures:
         ).get_horiz()
         self.__modified = True
         self.__max_width = None
+        self.__widths = None
         return self.__leaf_max_width
 
     def __get_leaf_max_width(self) -> float:
@@ -243,3 +249,18 @@ class ImageFeatures:
         self.__max_width = width_px * self.__get_px_width_in_mm()
         self.__modified = True
         return self.__max_width
+
+    def __get_widths(self) -> tuple_of_11[float]:
+        if self.__widths:
+            return self.__widths
+
+        maxw = self.__get_leaf_max_width_segment().length
+        widths_segm = tuple_of_11_to_python_tuple(self.__get_widths_segments())
+
+        widths_perc_list = [segm.length * 1.0 / maxw for segm in widths_segm]
+
+        self.__widths = to_tuple_of_11(widths_perc_list)
+
+        self.__modified = True
+        self.__leaf_max_width = None
+        return self.__widths
