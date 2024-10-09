@@ -124,6 +124,9 @@ class ImageFeatures:
                 [Segment.from_JSON(segm) for segm in internals["widths"]]
             )
 
+        if internals.get("max_width", None):
+            self.__leaf_max_width = Segment.from_JSON(internals["max_width"])
+
         # Features
 
         if features.get("height", None):
@@ -132,8 +135,8 @@ class ImageFeatures:
         if features.get("max_width", None):
             self.__max_width = features["max_width"]
 
-        if features.get("width", None):
-            self.__width = to_tuple_of_11(features["width"])
+        if features.get("widths", None):
+            self.__widths = to_tuple_of_11(features["widths"])
 
         return self
 
