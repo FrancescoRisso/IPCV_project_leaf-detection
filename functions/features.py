@@ -68,7 +68,7 @@ class ImageFeatures:
         self.__avg_color_sat: Optional[int] = None
         self.__avg_color_val: Optional[int] = None
 
-    def to_JSON(self) -> str:
+    def to_JSON(self) -> dict[str, dict[str, Any]]:
         width_segments = tuple_of_11_to_python_tuple(self.__get_widths_segments())
         width_segments_json = [w.to_JSON() for w in width_segments]
 
@@ -103,7 +103,10 @@ class ImageFeatures:
             },
         }
 
-        return json.dumps(res)
+        return res
+
+    def to_JSON_string(self) -> str:
+        return json.dumps(self.to_JSON())
 
     def load_details_from_file(self, path: str) -> ImageFeatures:
         """
@@ -179,11 +182,14 @@ class ImageFeatures:
             values were computed or not
         """
 
-        result = self.to_JSON()
+        result = self.to_JSON_string()
 
         if force or self.__modified:
             with open(path, "w") as f:
                 f.write(result)
+
+    def get_features(self) -> dict[str, Any]:
+        return self.to_JSON()["features"]
 
     def __get_px_width_in_mm(self) -> float:
         if self.__px_width_in_mm:
