@@ -64,9 +64,9 @@ class ImageFeatures:
         self.__height: Optional[float] = None
         self.__max_width: Optional[float] = None
         self.__widths: Optional[tuple_of_11[float]] = None
-        self.__avg_color_hue: Optional[int] = None
-        self.__avg_color_sat: Optional[int] = None
-        self.__avg_color_val: Optional[int] = None
+        self.__avg_color_hue: Optional[float] = None
+        self.__avg_color_sat: Optional[float] = None
+        self.__avg_color_val: Optional[float] = None
 
     def to_JSON(self) -> dict[str, dict[str, Any]]:
         width_segments = tuple_of_11_to_python_tuple(self.__get_widths_segments())
@@ -304,7 +304,7 @@ class ImageFeatures:
             self.__get_leaf_max_width_segment(), self.__get_leaf_height_segment()
         )
 
-    def __get_avg_color(self) -> tuple[int, int, int]:
+    def __get_avg_color(self) -> tuple[float, float, float]:
         if self.__avg_color_hue and self.__avg_color_sat and self.__avg_color_val:
             return (self.__avg_color_hue, self.__avg_color_sat, self.__avg_color_val)
 
