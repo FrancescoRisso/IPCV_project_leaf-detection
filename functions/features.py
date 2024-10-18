@@ -64,7 +64,9 @@ class ImageFeatures:
         self.__height: Optional[float] = None
         self.__max_width: Optional[float] = None
         self.__widths: Optional[tuple_of_11[float]] = None
-        self.__avg_color_hsv: Optional[tuple[int, int, int]] = None
+        self.__avg_color_hue: Optional[int] = None
+        self.__avg_color_sat: Optional[int] = None
+        self.__avg_color_val: Optional[int] = None
 
     def to_JSON(self) -> str:
         width_segments = tuple_of_11_to_python_tuple(self.__get_widths_segments())
@@ -74,8 +76,22 @@ class ImageFeatures:
             "features": {
                 "height": self.__get_leaf_height(),
                 "max_width": self.__get_leaf_max_width(),
-                "widths": list(tuple_of_11_to_python_tuple(self.__get_widths())),
-                "avg_color": self.__get_avg_color(),
+                #
+                "width_0perc": self.__get_widths()[0],
+                "width_10perc": self.__get_widths()[1],
+                "width_20perc": self.__get_widths()[2],
+                "width_30perc": self.__get_widths()[3],
+                "width_40perc": self.__get_widths()[4],
+                "width_50perc": self.__get_widths()[5],
+                "width_60perc": self.__get_widths()[6],
+                "width_70perc": self.__get_widths()[7],
+                "width_80perc": self.__get_widths()[8],
+                "width_90perc": self.__get_widths()[9],
+                "width_100perc": self.__get_widths()[10],
+                #
+                "avg_color_hue": self.__get_avg_color()[0],
+                "avg_color_sat": self.__get_avg_color()[1],
+                "avg_color_val": self.__get_avg_color()[2],
             },
             "internal": {
                 "px_width_in_mm": self.__get_px_width_in_mm(),
@@ -138,11 +154,12 @@ class ImageFeatures:
         if features.get("max_width", None):
             self.__max_width = features["max_width"]
 
-        if features.get("widths", None):
-            self.__widths = to_tuple_of_11(features["widths"])
-
-        if features.get("avg_color", None):
-            self.__avg_color_hsv = features["avg_color"]
+        if features.get("avg_color_hue", None):
+            self.__avg_color_hue = features["avg_color_hue"]
+        if features.get("avg_color_sat", None):
+            self.__avg_color_sat = features["avg_color_sat"]
+        if features.get("avg_color_val", None):
+            self.__avg_color_val = features["avg_color_val"]
 
         return self
 
@@ -273,7 +290,6 @@ class ImageFeatures:
         self.__widths = to_tuple_of_11(widths_perc_list)
 
         self.__modified = True
-        self.__leaf_max_width = None
         return self.__widths
 
     def __get_leaf_roi(self) -> Rectangle:
@@ -283,10 +299,12 @@ class ImageFeatures:
         )
 
     def __get_avg_color(self) -> tuple[int, int, int]:
-        if self.__avg_color_hsv:
-            return self.__avg_color_hsv
+        if self.__avg_color_hue and self.__avg_color_sat and self.__avg_color_val:
+            return (self.__avg_color_hue, self.__avg_color_sat, self.__avg_color_val)
 
-        self.__avg_color_hsv = get_avg_color(self.__img, self.__get_leaf_roi())
+        self.__avg_color_hue, self.__avg_color_sat, self.__avg_color_val = (
+            get_avg_color(self.__img, self.__get_leaf_roi())
+        )
 
         self.__modified = True
-        return self.__avg_color_hsv
+        return (self.__avg_color_hue, self.__avg_color_sat, self.__avg_color_val)
