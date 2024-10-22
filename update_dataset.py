@@ -2,6 +2,7 @@ import os
 import cv2
 
 from functions.features import ImageFeatures
+from functions.classifiers.bayes.summarize_dataset import BAYES_summarize_dataset
 
 import threading
 import json
@@ -22,7 +23,10 @@ def update_dataset() -> None:
     for thread in threads:
         thread.join()
 
-    print(f"\nDataset update complete!")
+    print("\nDataset update complete!")
+    print("Updating bayes model...")
+    BAYES_summarize_dataset()
+    print("Bayes model update complete!")
 
 
 def process_plant(leaf: str) -> None:
@@ -61,8 +65,6 @@ def process_plant(leaf: str) -> None:
 
     with open(f"./dataset/plant_recaps/{leaf}.json", "w") as f:
         json.dump(all_leaves_data, f)
-
-    # TODO compute percentages
 
     print(f'Dataset for plant "{leaf}" is now updated.')
 
