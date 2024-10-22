@@ -43,7 +43,7 @@ def BAYES_summarize_dataset() -> None:
 
     # Compute and store P(X|C) for each plant C for each feature X
     for feature in data.keys():
-        P_X_given_C = __compute_feature_given_leaf_percentagesTMP(
+        P_X_given_C = __compute_feature_given_leaf_percentages(
             labels,
             data_discrete[feature],
             to_store["discretization"][feature]["num_bins"],
@@ -54,16 +54,15 @@ def BAYES_summarize_dataset() -> None:
     with open("./classification_models_data/bayes.json", "w") as f:
         json.dump(to_store, f)
 
-    # TMP REMOVE
-    TMPf = open("./tmp.csv", "w")
-    TMPf.write(",".join(data.keys()))
-    TMPf.write("\n")
-    for i in range(len(labels)):
-        TMPf.write(
-            ",".join([str(data_discrete[feature][i]) for feature in data.keys()])
-        )
-        TMPf.write("\n")
-    TMPf.close()
+    # Store all data as csv file for computing correlation matrix
+    with open("./dataset/alldata.csv", "w") as f:
+        f.write(",".join(data.keys()))
+        f.write("\n")
+        for i in range(len(labels)):
+            f.write(
+                ",".join([str(data_discrete[feature][i]) for feature in data.keys()])
+            )
+            f.write("\n")
 
 
 def __load_all_data() -> tuple[list[str], dict[str, Any]]:
@@ -242,7 +241,7 @@ def __compute_leaf_percentages(plants: list[str]) -> dict[str, float]:
     the dataset
     """
 
-    count = dict.fromkeys([plant for plant in set(plants)], 0)
+    count = dict.fromkeys([plant for plant in sorted(set(plants))], 0)
 
     for plant in plants:
         count[plant] += 1
@@ -283,63 +282,9 @@ def __compute_feature_given_leaf_percentages(
     P(X|C)
     """
 
-    # TODO Laplace smoothing
+    # Laplace smoothing: each data point counts as 3, and each bin has 1 extra count
 
-    count = dict.fromkeys([plant for plant in set(plants)], 0)
-
-    count_per_bin: dict[str, list[int]] = dict.fromkeys(
-        [plant for plant in set(plants)], []
-    )
-    for plant in count_per_bin.keys():
-        count_per_bin[plant] = [0 for _ in range(num_bins)]
-
-    for plant, bin_num in zip(plants, data):
-        count[plant] += 1
-        count_per_bin[plant][bin_num] += 1
-
-    res: dict[str, list[float]] = {}
-
-    for plant in count.keys():
-        res[plant] = []
-
-        for bin_num in range(num_bins):
-            perc = float(count_per_bin[plant][bin_num]) / count[plant]
-            res[plant].append(perc)
-
-    return res
-
-
-def __compute_feature_given_leaf_percentagesTMP(
-    plants: list[str], data: list[int], num_bins: int
-) -> dict[str, list[float]]:
-    """
-    Given the discretized data for a feature, computes the probability of
-    a random leaf of a specific class to have each discrete value, for
-    each class.
-
-    In Bayes model, this is P(X|C)
-
-    ---------------------------------------------------------------------
-    PARAMETERS
-    ----------
-    - plants: a list with the label names, each inserted once per each
-        image of that leaf present in the dataset
-    - data: a list with the discretized data values, in direct
-        correspondance with plants
-    - num_bins: the number of bins used to discretize the specific
-        feature
-
-    ---------------------------------------------------------------------
-    OUTPUT
-    ------
-    A dict taht associates each plant (C) to an array. This array
-    associates each discrete value (the index, X) to the probability
-    P(X|C)
-    """
-
-    # TODO Laplace smoothing
-
-    count = dict.fromkeys([plant for plant in set(plants)], num_bins)
+    count = dict.fromkeys([plant for plant in sorted(set(plants))], num_bins)
 
     count_per_bin: dict[str, list[int]] = dict.fromkeys(
         [plant for plant in set(plants)], []
