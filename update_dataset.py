@@ -2,8 +2,10 @@ import os
 import cv2
 
 from functions.features import ImageFeatures
+from functions.classifiers.bayes.summarize_dataset import BAYES_summarize_dataset
 
 import threading
+import json
 
 
 def update_dataset() -> None:
@@ -21,7 +23,10 @@ def update_dataset() -> None:
     for thread in threads:
         thread.join()
 
-    print(f"\nDataset update complete!")
+    print("\nDataset update complete!")
+    print("Updating bayes model...")
+    BAYES_summarize_dataset()
+    print("Bayes model update complete!")
 
 
 def process_plant(leaf: str) -> None:
@@ -30,6 +35,8 @@ def process_plant(leaf: str) -> None:
     # If the descriptions folder does not exist, create it
     if not os.path.exists(f"./dataset/descriptions/{leaf}"):
         os.makedirs(f"./dataset/descriptions/{leaf}")
+
+    all_leaves_list = []
 
     for img_file_name in files_list:
         img_path = f"./dataset/images/{leaf}/{img_file_name}"
@@ -50,8 +57,14 @@ def process_plant(leaf: str) -> None:
 
         # If there were updates, update the file
         img_features.store_to_file(json_path)
+        all_leaves_list.append(img_features.get_features())
 
-    # TODO compute plant summary and percentages
+    all_leaves_data = {}
+    for feature in all_leaves_list[0].keys():
+        all_leaves_data[feature] = [leaf[feature] for leaf in all_leaves_list]
+
+    with open(f"./dataset/plant_recaps/{leaf}.json", "w") as f:
+        json.dump(all_leaves_data, f)
 
     print(f'Dataset for plant "{leaf}" is now updated.')
 
