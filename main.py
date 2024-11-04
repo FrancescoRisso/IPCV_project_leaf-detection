@@ -72,7 +72,7 @@ if __name__ == "__main__":
             subparsers["c"].print_help()
         else:
             print("Starting analizing picture...")
-            img = ImageFeatures(cv2.imread(args.img))
+            img = ImageFeatures(args.img)
             print_classification_result(BAYES_classify(img.get_features()))
 
     elif args.command == "correlation":
