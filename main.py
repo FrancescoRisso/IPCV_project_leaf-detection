@@ -31,7 +31,15 @@ def args_def() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentPars
         "-f",
         type=str,
         action="store",
-        help="the name of the feature to be removed (mandatory)",
+        help="the name of the model feature to be removed",
+    )
+    remove_feature.add_argument(
+        "--internal",
+        "-i",
+        type=str,
+        action="store",
+        help="the name of the internal feature to be removed",
+        metavar="FEATURE"
     )
 
     classify = subparsers.add_parser(
@@ -62,10 +70,11 @@ if __name__ == "__main__":
         update_dataset()
 
     elif args.command == "rmfeature":
-        if args.feature == None:
+        if args.feature == None and args.internal == None:
             subparsers["rm"].print_help()
         else:
-            clear_dataset_feature(args.feature)
+            clear_dataset_feature(args.feature, "features")
+            clear_dataset_feature(args.internal, "internal")
 
     elif args.command == "classify":
         if args.img == None:
