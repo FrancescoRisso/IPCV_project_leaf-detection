@@ -1,6 +1,6 @@
 import argparse
 import sys
-import cv2
+import os
 
 from update_dataset import update_dataset
 from clear_dataset_feature import clear_dataset_feature
@@ -39,7 +39,7 @@ def args_def() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentPars
         type=str,
         action="store",
         help="the name of the internal feature to be removed",
-        metavar="FEATURE"
+        metavar="FEATURE",
     )
 
     classify = subparsers.add_parser(
@@ -51,7 +51,14 @@ def args_def() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentPars
         "-i",
         type=str,
         action="store",
-        help="the path to the image to be classified (mandatory)",
+        help="the path to the image to be classified",
+    )
+    classify.add_argument(
+        "--dir",
+        "-d",
+        type=str,
+        action="store",
+        help="the path to a folder whose content should be classified (non-recursive)",
     )
 
     subparsers.add_parser(
@@ -77,12 +84,21 @@ if __name__ == "__main__":
             clear_dataset_feature(args.internal, "internal")
 
     elif args.command == "classify":
-        if args.img == None:
+        if args.img == None and args.dir == None:
             subparsers["c"].print_help()
-        else:
+        elif args.img != None:
             print("Starting analizing picture...")
             img = ImageFeatures(args.img)
             print_classification_result(BAYES_classify(img.get_features()))
+        else:
+            for img_name in os.listdir(args.dir):
+                print(f'Starting analizing picture "{img_name}"...')
+                try:
+                    img = ImageFeatures(f"{args.dir}/{img_name}")
+                    print_classification_result(BAYES_classify(img.get_features()))
+                except AttributeError:
+                    print(f'"{img_name}" is not an image')
+                print("============================================================")
 
     elif args.command == "correlation":
         BAYES_check_correlation()
