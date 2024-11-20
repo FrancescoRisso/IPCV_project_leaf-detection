@@ -5,7 +5,7 @@ import math
 from typing import Tuple
 
 
-def topTipAngle(thImg: MatLike) -> float:
+def get_topTipAngle(thImg: MatLike) -> float:
     """
     Returns the angle of the top tip of the leaf passed as a tresholded
     image. It uses the Hough tranform to find the lines that compose
@@ -120,11 +120,9 @@ def topTipAngle(thImg: MatLike) -> float:
     
     # extract the top segment, it will be the first of the two segments which identify the top tip
     seg1 = highLines[0]
-    print(seg1)
     highLines.pop(0)
     tipAngle = 0.0
     for seg2 in highLines:
-        print(seg2)
         # we search for a second segment that we can use to identify and compute the angle of the top tip
         if not __isSameLine(seg1, seg2):
             # case1: the two segments have an angular coefficient with different sign (or one of them is flat),

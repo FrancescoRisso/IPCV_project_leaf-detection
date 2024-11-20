@@ -17,6 +17,7 @@ from functions.lengths.px_size import get_px_size
 from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_rect
 from functions.lengths.leaf_height import find_leaf_height
 from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
+from functions.lengths.leaf_tip import get_topTipAngle
 from functions.color.avg_color import get_avg_color
 
 
