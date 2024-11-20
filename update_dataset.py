@@ -44,8 +44,7 @@ def process_plant(leaf: str) -> None:
             f"./dataset/descriptions/{leaf}/{os.path.splitext(img_file_name)[0]}.json"
         )
 
-        img = cv2.imread(img_path)
-        img_features = ImageFeatures(img)
+        img_features = ImageFeatures(img_path)
 
         if os.path.exists(json_path):
             json_last_modify = os.path.getmtime(json_path)

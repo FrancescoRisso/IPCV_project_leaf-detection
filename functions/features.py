@@ -45,9 +45,10 @@ class ImageFeatures:
     - add a parser in load_details_from_file
     """
 
-    def __init__(self, img: MatLike) -> None:
+    def __init__(self, path: str) -> None:
         # Image, in BGR
-        self.__img = img
+        self.__img: Optional[MatLike] = None
+        self.__path: str = path
 
         # Modified flag
         self.__modified: bool = False
@@ -196,7 +197,7 @@ class ImageFeatures:
             return self.__px_width_in_mm
 
         self.__px_width_in_mm = get_px_size(
-            cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV), self.__get_paper_roi(), False
+            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV), self.__get_paper_roi(), False
         )
         self.__modified = True
         self.__max_width = None
@@ -207,7 +208,7 @@ class ImageFeatures:
             return self.__px_height_in_mm
 
         self.__px_height_in_mm = get_px_size(
-            cv2.cvtColor(self.__img, cv2.COLOR_BGR2HSV), self.__get_paper_roi(), True
+            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV), self.__get_paper_roi(), True
         )
         self.__modified = True
         self.__height = None
@@ -217,7 +218,7 @@ class ImageFeatures:
         if self.__paper_roi:
             return self.__paper_roi
 
-        self.__paper_roi = roi_boundaries_as_rect(find_roi_boundaries(self.__img))
+        self.__paper_roi = roi_boundaries_as_rect(find_roi_boundaries(self.__get_img()))
         self.__modified = True
         self.__px_width_in_mm = None
         self.__px_height_in_mm = None
@@ -230,7 +231,7 @@ class ImageFeatures:
         if self.__height_segment:
             return self.__height_segment
 
-        self.__height_segment = find_leaf_height(self.__img, self.__get_paper_roi())
+        self.__height_segment = find_leaf_height(self.__get_img(), self.__get_paper_roi())
         self.__modified = True
         self.__height = None
         self.__widths_segments = None
@@ -252,7 +253,7 @@ class ImageFeatures:
             return self.__widths_segments
 
         self.__widths_segments = get_leaf_widths(
-            self.__img, self.__get_paper_roi(), self.__get_leaf_height_segment()
+            self.__get_img(), self.__get_paper_roi(), self.__get_leaf_height_segment()
         )
         self.__modified = True
         self.__leaf_max_width = None
@@ -264,7 +265,7 @@ class ImageFeatures:
             return self.__leaf_max_width
 
         self.__leaf_max_width = get_leaf_roi(
-            self.__img,
+            self.__get_img(),
             self.__get_paper_roi(),
             self.__get_widths_segments(),
             self.__get_leaf_height_segment(),
@@ -309,8 +310,14 @@ class ImageFeatures:
             return (self.__avg_color_hue, self.__avg_color_sat, self.__avg_color_val)
 
         self.__avg_color_hue, self.__avg_color_sat, self.__avg_color_val = (
-            get_avg_color(self.__img, self.__get_leaf_roi())
+            get_avg_color(self.__get_img(), self.__get_leaf_roi())
         )
 
         self.__modified = True
         return (self.__avg_color_hue, self.__avg_color_sat, self.__avg_color_val)
+
+    def __get_img(self) -> MatLike:
+        if self.__img is None:
+            self.__img = cv2.imread(self.__path)
+
+        return self.__img
