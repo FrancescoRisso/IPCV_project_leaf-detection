@@ -1,53 +1,8 @@
-import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 from cv2.typing import MatLike
-import functions.lengths.paper_roi as pr
-import functions.utils.leaf as lf
-
 import math
 from typing import Tuple
-
-def get_leaf_mask(img: MatLike) -> MatLike:
-    """
-    Returns a mask to identify the exact region where the leaf is.
-    It is done by first applying thresholds on the 3 channels, then the
-    masks are and-ed, and finally a closing operation is executed to
-    remove some noise inside the leaf
-
-    ---------------------------------------------------------------------
-    PARAMETERS
-    ----------
-    - img: the image, in HSV
-
-    ---------------------------------------------------------------------
-    OUTPUT
-    ------
-    The mask that represents the leaf
-    """
-    MIN_LEAF_HUE = 0
-    MAX_LEAF_HUE = 80
-    MIN_LEAF_SAT = 100
-    MAX_LEAF_VAL = 150
-
-    min_hue_mask = cv2.threshold(img[:, :, 0], MIN_LEAF_HUE, 255, cv2.THRESH_BINARY)[1]
-    res = min_hue_mask
-
-    max_hue_mask = cv2.threshold(
-        img[:, :, 0], MAX_LEAF_HUE, 255, cv2.THRESH_BINARY_INV
-    )[1]
-    res = cv2.bitwise_and(res, max_hue_mask)
-
-    min_sat_mask = cv2.threshold(img[:, :, 1], MIN_LEAF_SAT, 255, cv2.THRESH_BINARY)[1]
-    res = cv2.bitwise_and(res, min_sat_mask)
-
-    max_val_mask = cv2.threshold(
-        img[:, :, 2], MAX_LEAF_VAL, 255, cv2.THRESH_BINARY_INV
-    )[1]
-    res = cv2.bitwise_and(res, max_val_mask)
-
-    return cv2.morphologyEx(res, cv2.MORPH_CLOSE, np.ones((21,21)))
-
 
 
 def topTipAngle(thImg: MatLike) -> float:
@@ -60,7 +15,7 @@ def topTipAngle(thImg: MatLike) -> float:
     ---------------------------------------------------------------------
     PARAMETERS
     ----------
-    - thImg: the mask that represent the leaf
+    - thImg: the mask (bitmap) of the leaf
 
     ---------------------------------------------------------------------
     OUTPUT
@@ -81,13 +36,15 @@ def topTipAngle(thImg: MatLike) -> float:
     highLines = []
     NUM_HIGH_SEGMENTS = 14
 
+
+    # chose if a segment should be in the list highLines
     def __insertHigher(highLines, line):
         if len(highLines) < NUM_HIGH_SEGMENTS:
             highLines.append([line[0], line[1], line[2], line[3]])
             highLines.sort(key=lambda line: min(line[1], line[3]))
         else :
             # if the new segment is higher on the image than the lowest from the highLines list 
-            # then I insert it and sort the list, so i can then pop the last one
+            # I insert it and sort the list, then pop the last one
             if min(line[1], line[3]) < min(highLines[-1][1], highLines[-1][3]):
                 highLines.append([line[0], line[1], line[2], line[3]])
                 highLines.sort(key=lambda line: min(line[1], line[3]))
@@ -97,8 +54,6 @@ def topTipAngle(thImg: MatLike) -> float:
     # the top NUM_HIGH_SEG (higher in the image), so with the lowest y value 
     for line in lines:
         __insertHigher(highLines, line[0])
-
-    print(highLines)
 
     # determines if a segment has a positive angular coefficient
     def __isIncr(seg):
@@ -116,7 +71,7 @@ def topTipAngle(thImg: MatLike) -> float:
     
     # determines if a segment is flat or almost flat (using the param)
     def __isFlat(seg):
-        MIN_FLAT_ANGLE = 1.39626 #ca. 80 deg, is considered flat from 80 to 90
+        MIN_FLAT_ANGLE = 1.39626 #ca. 80 deg, is considered flat from 80 
         x1, y1, x2, y2 = seg
         if x1 == x2 :
             return 0
@@ -149,8 +104,8 @@ def topTipAngle(thImg: MatLike) -> float:
             return 1
         return 0
     
-    # check if the two segment can be used to identify an angle or if they are two similar
-    # detections by hough of the same curved line
+    # check if the two segment can be used to identify an angle or if they are
+    # two detections by hough of the same curved line
     def __isSameLine(seg1, seg2) :
         a1 = __getAngle(seg1)
         a2 = __getAngle(seg2)
@@ -158,13 +113,12 @@ def topTipAngle(thImg: MatLike) -> float:
         # we check if the 2 seg have more or less the same angle and if they have both vertex that are too close
         if (abs(seg1[0]-seg2[0])<8 and abs(seg1[2]-seg2[2])<8):
             return 1
-        #elif (__gotSameAngle(seg1, a1, seg2, a2) and (seg2[0]<seg1[2] and seg2[1]<seg1[3])) or (__gotSameAngle(seg1, a1, seg2, a2) and (seg2[2]<seg1[0] and seg2[3]<seg1[1])) :
         elif __gotSameAngle(seg1, a1, seg2, a2):
             return 1
         else:
             return 0
     
-    # extract the top segment, it will be the first segment that identifies the top tip
+    # extract the top segment, it will be the first of the two segments which identify the top tip
     seg1 = highLines[0]
     print(seg1)
     highLines.pop(0)
