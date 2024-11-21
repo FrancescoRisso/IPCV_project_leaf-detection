@@ -5,7 +5,7 @@ import math
 from typing import Tuple
 
 
-def get_topTipAngle(thImg: MatLike) -> float:
+def get_top_tip_angle(thImg: MatLike) -> float:
     """
     Returns the angle of the top tip of the leaf passed as a tresholded
     image. It uses the Hough tranform to find the lines that compose
