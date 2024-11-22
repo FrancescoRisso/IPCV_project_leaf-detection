@@ -7,8 +7,8 @@ from typing import Tuple
 
 def get_top_tip_angle(thImg: MatLike) -> float:
     """
-    Returns the angle of the top tip of the leaf passed as a tresholded
-    image. It uses the Hough tranform to find the lines that compose
+    Returns the the top tip angle of the leaf passed as a tresholded
+    image. It uses the Hough tranform to find the segments that compose
     the edge of the leaf and elaborates the ones at the top to obtain
     the angle of the higher tip of the leaf.
 
@@ -36,6 +36,11 @@ def get_top_tip_angle(thImg: MatLike) -> float:
     highLines = []
     NUM_HIGH_SEGMENTS = 14
 
+    '''
+    The idea now is to iterate over all the segments found by the houghLines functions
+    and keep (by saving them in the ordered list highLines) only the 
+    NUM_HIGH_SEGMENTS higher, so hte ones with the lowest y value
+    '''
 
     # chose if a segment should be in the list highLines
     def __insertHigher(highLines, line):
@@ -118,6 +123,10 @@ def get_top_tip_angle(thImg: MatLike) -> float:
         else:
             return 0
     
+    '''
+    In this for cycle we choose the two segments which will compose the angle, and then
+    we compute its value
+    '''
     # extract the top segment, it will be the first of the two segments which identify the top tip
     seg1 = highLines[0]
     highLines.pop(0)
