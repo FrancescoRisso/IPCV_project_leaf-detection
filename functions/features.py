@@ -12,11 +12,13 @@ import cv2
 
 from functions.utils.rectangle import Rectangle
 from functions.utils.segment import Segment
+from functions.utils.leaf import get_leaf_mask
 
 from functions.lengths.px_size import get_px_size
 from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_rect
 from functions.lengths.leaf_height import find_leaf_height
 from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
+from functions.lengths.leaf_tip import get_top_tip_angle
 from functions.color.avg_color import get_avg_color
 
 
@@ -64,6 +66,7 @@ class ImageFeatures:
         # Model features
         self.__height: Optional[float] = None
         self.__max_width: Optional[float] = None
+        self.__tip_angle: Optional[float] = None
         self.__widths: Optional[tuple_of_11[float]] = None
         self.__avg_color_hue: Optional[float] = None
         self.__avg_color_sat: Optional[float] = None
@@ -77,6 +80,7 @@ class ImageFeatures:
             "features": {
                 "height": self.__get_leaf_height(),
                 "max_width": self.__get_leaf_max_width(),
+                "tip_angle": self.__get_leaf_tip_angle(),
                 #
                 "width_0perc": self.__get_widths()[0],
                 "width_10perc": self.__get_widths()[1],
@@ -157,6 +161,9 @@ class ImageFeatures:
 
         if features.get("max_width", None):
             self.__max_width = features["max_width"]
+
+        if features.get("tip_angle", None):
+            self.__tip_angle = features["tip_angle"]
 
         if features.get("avg_color_hue", None):
             self.__avg_color_hue = features["avg_color_hue"]
@@ -247,6 +254,20 @@ class ImageFeatures:
         self.__height = height_px * self.__get_px_height_in_mm()
         self.__modified = True
         return self.__height
+    
+    def __get_leaf_tip_angle(self) -> float:
+        if self.__tip_angle:
+            return self.__tip_angle
+        
+        img = self.__get_img()
+        l, r, t, b = find_roi_boundaries(img)
+        img = img[t:b, l:r]
+        leaf_mask = get_leaf_mask(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
+        self.__tip_angle = get_top_tip_angle(leaf_mask)
+        
+        self.__modified = True
+        return self.__tip_angle
+
 
     def __get_widths_segments(self) -> tuple_of_11[Segment]:
         if self.__widths_segments:
