@@ -259,7 +259,10 @@ class ImageFeatures:
         if self.__tip_angle:
             return self.__tip_angle
         
-        leaf_mask = get_leaf_mask(cv2.cvtColor(self.__get_img, cv2.COLOR_BGR2HSV))
+        img = self.__get_img()
+        l, r, t, b = find_roi_boundaries(img)
+        img = img[t:b, l:r]
+        leaf_mask = get_leaf_mask(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
         self.__tip_angle = get_top_tip_angle(leaf_mask)
         
         self.__modified = True
