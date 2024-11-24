@@ -123,13 +123,15 @@ def __load_all_data() -> tuple[list[str], dict[str, Any]]:
 
 def __discretize_data(
     data: list[Any], plants: list[str]
-) -> tuple[int, list[float], list[int]]:
+) -> tuple[int, list[float] | None, list[int]]:
     """
     Given data for a feature, finds the best way to discretize it, and
     then executes the discretization.
 
-    The discretization is based on quantiles, and the number of bins is
-    selected as the one with greatest entropy among:
+    If the attribute is boolean, False = 0 and True = 1
+
+    For float values, the discretization is based on quantiles, and the
+    number of bins is selected as the one with greatest entropy among:
     - ```10```
     - ```max(1, floor(2 * log10(len(data))))```
     - ```floor(1 + log2(len(data)))```
@@ -148,10 +150,14 @@ def __discretize_data(
     OUTPUT
     ------
     - the selected number of bins
-    - the selected bins (discretizer.bin_edges_)
+    - the selected bins (discretizer.bin_edges_), or None if the feature
+        was boolean
     - the discretized data
 
     """
+
+    if type(data[0]) == bool:
+        return (2, None, [1 if val else 0 for val in data])
 
     data = [[val] for val in data]
 
