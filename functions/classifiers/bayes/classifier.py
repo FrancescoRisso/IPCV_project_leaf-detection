@@ -67,6 +67,9 @@ def __discretize_feature_val(model: dict[str, Any], value: Any) -> int:
     ------
     Value discretized according to model, as an integer class ID
     """
+    if model["bin_edges"] is None:
+        return 1 if value else 0
+
     discretizer = KBinsDiscretizer(
         n_bins=model["num_bins"], strategy="quantile", encode="ordinal"
     )

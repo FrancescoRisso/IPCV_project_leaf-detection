@@ -20,6 +20,7 @@ from functions.lengths.leaf_height import find_leaf_height
 from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
 from functions.lengths.leaf_tip import get_top_tip_angle
 from functions.color.avg_color import get_avg_color
+from functions.shape.is_convex import is_likely_convex
 
 
 class ImageFeatures:
@@ -71,6 +72,7 @@ class ImageFeatures:
         self.__avg_color_hue: Optional[float] = None
         self.__avg_color_sat: Optional[float] = None
         self.__avg_color_val: Optional[float] = None
+        self.__likely_convex: Optional[bool] = None
 
     def to_JSON(self) -> dict[str, dict[str, Any]]:
         width_segments = tuple_of_11_to_python_tuple(self.__get_widths_segments())
@@ -97,6 +99,8 @@ class ImageFeatures:
                 "avg_color_hue": self.__get_avg_color()[0],
                 "avg_color_sat": self.__get_avg_color()[1],
                 "avg_color_val": self.__get_avg_color()[2],
+                #
+                "likely_convex": self.__get_likely_convex(),
             },
             "internal": {
                 "px_width_in_mm": self.__get_px_width_in_mm(),
@@ -172,6 +176,9 @@ class ImageFeatures:
         if features.get("avg_color_val", None):
             self.__avg_color_val = features["avg_color_val"]
 
+        if features.get("likely_convex", None) is not None:
+            self.__likely_convex = features["likely_convex"]
+
         return self
 
     def store_to_file(self, path: str, force: bool = False) -> None:
@@ -204,7 +211,9 @@ class ImageFeatures:
             return self.__px_width_in_mm
 
         self.__px_width_in_mm = get_px_size(
-            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV), self.__get_paper_roi(), False
+            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV),
+            self.__get_paper_roi(),
+            False,
         )
         self.__modified = True
         self.__max_width = None
@@ -215,7 +224,9 @@ class ImageFeatures:
             return self.__px_height_in_mm
 
         self.__px_height_in_mm = get_px_size(
-            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV), self.__get_paper_roi(), True
+            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV),
+            self.__get_paper_roi(),
+            True,
         )
         self.__modified = True
         self.__height = None
@@ -238,7 +249,9 @@ class ImageFeatures:
         if self.__height_segment:
             return self.__height_segment
 
-        self.__height_segment = find_leaf_height(self.__get_img(), self.__get_paper_roi())
+        self.__height_segment = find_leaf_height(
+            self.__get_img(), self.__get_paper_roi()
+        )
         self.__modified = True
         self.__height = None
         self.__widths_segments = None
@@ -254,20 +267,19 @@ class ImageFeatures:
         self.__height = height_px * self.__get_px_height_in_mm()
         self.__modified = True
         return self.__height
-    
+
     def __get_leaf_tip_angle(self) -> float:
         if self.__tip_angle:
             return self.__tip_angle
-        
+
         img = self.__get_img()
         l, r, t, b = find_roi_boundaries(img)
         img = img[t:b, l:r]
         leaf_mask = get_leaf_mask(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
         self.__tip_angle = get_top_tip_angle(leaf_mask)
-        
+
         self.__modified = True
         return self.__tip_angle
-
 
     def __get_widths_segments(self) -> tuple_of_11[Segment]:
         if self.__widths_segments:
@@ -342,3 +354,15 @@ class ImageFeatures:
             self.__img = cv2.imread(self.__path)
 
         return self.__img
+
+    def __get_likely_convex(self) -> bool:
+        if self.__likely_convex is not None:
+            return self.__likely_convex
+
+        self.__likely_convex = is_likely_convex(
+            self.__get_img(),
+            self.__get_leaf_max_width_segment(),
+            self.__get_leaf_height_segment(),
+        )
+        self.__modified = True
+        return self.__likely_convex
