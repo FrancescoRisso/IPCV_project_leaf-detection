@@ -5,7 +5,10 @@ import os
 from update_dataset import update_dataset
 from clear_dataset_feature import clear_dataset_feature
 from functions.classifiers.bayes.classifier import BAYES_classify
-from functions.classifiers.bayes.check_correlation import BAYES_check_correlation
+from functions.classifiers.bayes.check_correlation import (
+    BAYES_check_correlation,
+    BAYES_check_ABS_correlation,
+)
 from functions.classifiers.result import print_classification_result
 from functions.features import ImageFeatures
 
@@ -61,9 +64,14 @@ def args_def() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentPars
         help="the path to a folder whose content should be classified (non-recursive)",
     )
 
-    subparsers.add_parser(
+    correlation = subparsers.add_parser(
         name="correlation",
         help="show the correlation matrix for all the features",
+    )
+    correlation.add_argument(
+        "--abs",
+        action="store_true",
+        help="Display the absolute value of the correlation, instead of the positive and negative correlation",
     )
 
     return (args, {"rm": remove_feature, "c": classify})
@@ -101,7 +109,10 @@ if __name__ == "__main__":
                 print("============================================================")
 
     elif args.command == "correlation":
-        BAYES_check_correlation()
+        if args.abs:
+            BAYES_check_ABS_correlation()
+        else:
+            BAYES_check_correlation()
 
     else:
         args_parser.print_help()
