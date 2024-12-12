@@ -1,20 +1,12 @@
 import cv2
-import os
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 
 from cv2.typing import MatLike
 from typing import Tuple
-from functions.utils.leaf import get_leaf_mask
-from functions.lengths.paper_roi import find_roi_boundaries
 
-img = cv2.imread(os.path.join(base_path, foglia))
-l, r, t, b = find_roi_boundaries(img)
-img = img[t:b, l:r]
-mask = get_leaf_mask(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
-
-def find_leaf_contour(mask: MatLike) -> np.ndarray[Any, dtype[generic]]:
+def find_leaf_contour(mask: MatLike) -> np.ndarray[Tuple, Tuple]:
     """
     The function retrives the leaf contour using openCV findContours
     function
