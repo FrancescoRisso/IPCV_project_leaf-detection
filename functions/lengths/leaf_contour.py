@@ -9,14 +9,12 @@ from typing import Tuple
 from functions.utils.leaf import get_leaf_mask
 from functions.lengths.paper_roi import find_roi_boundaries
 
-base_path  = "C:/Users/Utente/Desktop/scuola/universita/ImgProcessing/IPCV-leaf.detection/IPCV_project_leaf-detection/dataset/images"
-foglia = "frassino/001.jpg"
 img = cv2.imread(os.path.join(base_path, foglia))
 l, r, t, b = find_roi_boundaries(img)
 img = img[t:b, l:r]
 mask = get_leaf_mask(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
 
-def find_leaf_contour(mask: MatLike) -> np.ndarray:
+def find_leaf_contour(mask: MatLike) -> np.ndarray[Any, dtype[generic]]:
     """
     The function retrives the leaf contour using openCV findContours
     function
@@ -98,7 +96,7 @@ def get_leaf_perimeter(contour: np.array) -> float:
     return perimeter
 
 
-def get_leaf_convexity(contour: np,array) -> float:
+def get_leaf_convexity(contour: np.array) -> float:
     """
     The function computes the convexity of the leaf
     ---------------------------------------------------------------------
