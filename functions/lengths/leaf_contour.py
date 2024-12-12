@@ -19,7 +19,7 @@ def find_leaf_contour(mask: MatLike) -> MatLike:
     ---------------------------------------------------------------------
     OUTPUT
     ------
-    The openCV contour of the leaf (the main one), as a numpy array.
+    The openCV contour of the leaf (the main one).
     It is accepted by the openCV functions which work with contours 
     """
 
@@ -77,7 +77,7 @@ def get_leaf_perimeter(contour: MatLike) -> float:
 
     PARAMETERS
     ----------
-    - contour: the OpenCV contour of the leaf, a numpy array
+    - contour: the OpenCV contour of the leaf
 
     ---------------------------------------------------------------------
     OUTPUT
@@ -97,7 +97,7 @@ def get_leaf_convexity(contour: MatLike) -> float:
 
     PARAMETERS
     ----------
-    - contour: the OpenCV contour of the leaf, a numpy array
+    - contour: the OpenCV contour of the leaf
 
     ---------------------------------------------------------------------
     OUTPUT
