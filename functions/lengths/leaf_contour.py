@@ -4,9 +4,9 @@ import math
 import matplotlib.pyplot as plt
 
 from cv2.typing import MatLike
-from typing import Tuple
+from typing import Tuple, List, Any
 
-def find_leaf_contour(mask: MatLike) -> np.ndarray:
+def find_leaf_contour(mask: MatLike) -> np.ndarray[Any, np.dtype[np.int32]]:
     """
     The function retrives the leaf contour using openCV findContours
     function
@@ -70,7 +70,7 @@ def find_leaf_contour(mask: MatLike) -> np.ndarray:
     return contour
 
 
-def get_leaf_perimeter(contour: np.array) -> float:
+def get_leaf_perimeter(contour: np.ndarray[Any, np.dtype[np.int32]]) -> float:
     """
     The function retrives the length of the leaf perimeter
     ---------------------------------------------------------------------
@@ -90,7 +90,7 @@ def get_leaf_perimeter(contour: np.array) -> float:
     return perimeter
 
 
-def get_leaf_convexity(contour: np.array) -> float:
+def get_leaf_convexity(contour: np.ndarray[Any, np.dtype[np.int32]]) -> float:
     """
     The function computes the convexity of the leaf
     ---------------------------------------------------------------------
