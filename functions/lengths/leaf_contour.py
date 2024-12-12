@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from cv2.typing import MatLike
 from typing import Tuple, List, Any
 
-def find_leaf_contour(mask: MatLike) -> np.ndarray[Any, np.dtype[np.int32]]:
+def find_leaf_contour(mask: MatLike) -> MatLike:
     """
     The function retrives the leaf contour using openCV findContours
     function
@@ -38,7 +38,7 @@ def find_leaf_contour(mask: MatLike) -> np.ndarray[Any, np.dtype[np.int32]]:
 
     # add a 10px black border around the image, so the leaves which exceed the image
     # dimensions are properly elaborated by Canny and then by the findContour function
-    maskEx = cv2.copyMakeBorder(mask, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=0)
+    maskEx = cv2.copyMakeBorder(mask, 10, 10, 10, 10, cv2.BORDER_CONSTANT, dst=None, value=[0, 0, 0])
 
     # N.B. 
     # the new coordinates are not usable on the leaf maske beacuse now the image is bigger,
@@ -54,7 +54,7 @@ def find_leaf_contour(mask: MatLike) -> np.ndarray[Any, np.dtype[np.int32]]:
 
     # if many contours are detected, we select the right one by finding the biggest, 
     # so the one which contains the most pixels
-    bestCnt = None
+    bestCnt = contours[0]
     if not contours:
         raise ValueError("Could not detect a contour on the leaf")
     elif len(contours) > 1 :
@@ -70,7 +70,7 @@ def find_leaf_contour(mask: MatLike) -> np.ndarray[Any, np.dtype[np.int32]]:
     return contour
 
 
-def get_leaf_perimeter(contour: np.ndarray[Any, np.dtype[np.int32]]) -> float:
+def get_leaf_perimeter(contour: MatLike) -> float:
     """
     The function retrives the length of the leaf perimeter
     ---------------------------------------------------------------------
@@ -90,7 +90,7 @@ def get_leaf_perimeter(contour: np.ndarray[Any, np.dtype[np.int32]]) -> float:
     return perimeter
 
 
-def get_leaf_convexity(contour: np.ndarray[Any, np.dtype[np.int32]]) -> float:
+def get_leaf_convexity(contour: MatLike) -> float:
     """
     The function computes the convexity of the leaf
     ---------------------------------------------------------------------
