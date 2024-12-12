@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from cv2.typing import MatLike
 from typing import Tuple
 
-def find_leaf_contour(mask: MatLike) -> np.ndarray[Tuple, Tuple]:
+def find_leaf_contour(mask: MatLike) -> np.ndarray:
     """
     The function retrives the leaf contour using openCV findContours
     function
@@ -38,13 +38,13 @@ def find_leaf_contour(mask: MatLike) -> np.ndarray[Tuple, Tuple]:
 
     # add a 10px black border around the image, so the leaves which exceed the image
     # dimensions are properly elaborated by Canny and then by the findContour function
-    mask = cv2.copyMakeBorder(mask, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=0)
+    maskEx = cv2.copyMakeBorder(mask, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=0)
 
     # N.B. 
     # the new coordinates are not usable on the leaf maske beacuse now the image is bigger,
     # however the features which will be extracted are not position related so we'll ignore that 
 
-    edge = cv2.Canny(mask, 175, 175)
+    edge = cv2.Canny(maskEx, 175, 175)
     edge = cv2.dilate(edge, ker2)   
     edge = cv2.erode(edge, ker2)
     edge = cv2.dilate(edge, ker3)  
@@ -55,7 +55,9 @@ def find_leaf_contour(mask: MatLike) -> np.ndarray[Tuple, Tuple]:
     # if many contours are detected, we select the right one by finding the biggest, 
     # so the one which contains the most pixels
     bestCnt = None
-    if len(contours) > 1 :
+    if not contours:
+        raise ValueError("Could not detect a contour on the leaf")
+    elif len(contours) > 1 :
         bestArea = 0
         for cont in contours:
             areaC = cv2.contourArea(cont)
