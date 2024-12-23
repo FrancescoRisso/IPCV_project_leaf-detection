@@ -19,6 +19,11 @@ from functions.lengths.paper_roi import find_roi_boundaries, roi_boundaries_as_r
 from functions.lengths.leaf_height import find_leaf_height
 from functions.lengths.leaf_width import get_leaf_widths, get_leaf_roi
 from functions.lengths.leaf_tip import get_top_tip_angle
+from functions.lengths.leaf_contour import (
+    find_leaf_contour,
+    get_leaf_convexity,
+    get_leaf_perimeter,
+)
 from functions.color.avg_color import get_avg_color
 
 
@@ -62,11 +67,15 @@ class ImageFeatures:
         self.__height_segment: Optional[Segment] = None
         self.__widths_segments: Optional[tuple_of_11[Segment]] = None
         self.__leaf_max_width: Optional[Segment] = None
+        self.__roi_boundaries: Optional[tuple[int, int, int, int]] = None
+        self.__leaf_mask_of_roi: Optional[MatLike] = None
 
         # Model features
         self.__height: Optional[float] = None
         self.__max_width: Optional[float] = None
         self.__tip_angle: Optional[float] = None
+        self.__leaf_convexity: Optional[float] = None
+        self.__perimeter: Optional[float] = None
         self.__widths: Optional[tuple_of_11[float]] = None
         self.__avg_color_hue: Optional[float] = None
         self.__avg_color_sat: Optional[float] = None
@@ -81,6 +90,8 @@ class ImageFeatures:
                 "height": self.__get_leaf_height(),
                 "max_width": self.__get_leaf_max_width(),
                 "tip_angle": self.__get_leaf_tip_angle(),
+                "leaf_convexity": self.__get_leaf_convexity(),
+                "perimeter": self.__get_leaf_perimeter(),
                 #
                 "width_0perc": self.__get_widths()[0],
                 # "width_10perc": self.__get_widths()[1],
@@ -105,6 +116,7 @@ class ImageFeatures:
                 "height_segment": self.__get_leaf_height_segment().to_JSON(),
                 "widths": width_segments_json,
                 "max_width": self.__get_leaf_max_width_segment().to_JSON(),
+                "roi_boundaries": self.__get_roi_boundaries(),
             },
         }
 
@@ -154,6 +166,9 @@ class ImageFeatures:
         if internals.get("max_width", None):
             self.__leaf_max_width = Segment.from_JSON(internals["max_width"])
 
+        if internals.get("roi_boundaries", None):
+            self.__roi_boundaries = internals["roi_boundaries"]
+
         # Features
 
         if features.get("height", None):
@@ -164,6 +179,12 @@ class ImageFeatures:
 
         if features.get("tip_angle", None):
             self.__tip_angle = features["tip_angle"]
+
+        if features.get("leaf_convexity", None):
+            self.__leaf_convexity = features["leaf_convexity"]
+
+        if features.get("perimeter", None):
+            self.__perimeter = features["perimeter"]
 
         if features.get("avg_color_hue", None):
             self.__avg_color_hue = features["avg_color_hue"]
@@ -204,7 +225,9 @@ class ImageFeatures:
             return self.__px_width_in_mm
 
         self.__px_width_in_mm = get_px_size(
-            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV), self.__get_paper_roi(), False
+            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV),
+            self.__get_paper_roi(),
+            False,
         )
         self.__modified = True
         self.__max_width = None
@@ -215,7 +238,9 @@ class ImageFeatures:
             return self.__px_height_in_mm
 
         self.__px_height_in_mm = get_px_size(
-            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV), self.__get_paper_roi(), True
+            cv2.cvtColor(self.__get_img(), cv2.COLOR_BGR2HSV),
+            self.__get_paper_roi(),
+            True,
         )
         self.__modified = True
         self.__height = None
@@ -238,7 +263,9 @@ class ImageFeatures:
         if self.__height_segment:
             return self.__height_segment
 
-        self.__height_segment = find_leaf_height(self.__get_img(), self.__get_paper_roi())
+        self.__height_segment = find_leaf_height(
+            self.__get_img(), self.__get_paper_roi()
+        )
         self.__modified = True
         self.__height = None
         self.__widths_segments = None
@@ -254,20 +281,60 @@ class ImageFeatures:
         self.__height = height_px * self.__get_px_height_in_mm()
         self.__modified = True
         return self.__height
-    
+
+    def __get_roi_boundaries(self) -> tuple[int, int, int, int]:
+        if self.__roi_boundaries is not None:
+            return self.__roi_boundaries
+
+        l, r, t, b = find_roi_boundaries(self.__get_img())
+        self.__roi_boundaries = (int(l), int(r), int(t), int(b))
+        self.__leaf_mask_of_roi = None
+        self.__modified = True
+        return self.__roi_boundaries
+
+    def __get_leaf_mask_of_roi(self) -> MatLike:
+        if self.__leaf_mask_of_roi is not None:
+            return self.__leaf_mask_of_roi
+
+        img = self.__get_img()
+        l, r, t, b = self.__get_roi_boundaries()
+        img = img[t:b, l:r]
+        self.__leaf_mask_of_roi = get_leaf_mask(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
+
+        self.__modified = True
+        return self.__leaf_mask_of_roi
+
     def __get_leaf_tip_angle(self) -> float:
         if self.__tip_angle:
             return self.__tip_angle
-        
-        img = self.__get_img()
-        l, r, t, b = find_roi_boundaries(img)
-        img = img[t:b, l:r]
-        leaf_mask = get_leaf_mask(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
+
+        leaf_mask = self.__get_leaf_mask_of_roi()
         self.__tip_angle = get_top_tip_angle(leaf_mask)
-        
+
         self.__modified = True
         return self.__tip_angle
 
+    def __get_leaf_convexity(self) -> float:
+        if self.__leaf_convexity:
+            return self.__leaf_convexity
+
+        leaf_mask = self.__get_leaf_mask_of_roi()
+        contour = find_leaf_contour(leaf_mask)
+        self.__leaf_convexity = get_leaf_convexity(contour)
+
+        self.__modified = True
+        return self.__leaf_convexity
+
+    def __get_leaf_perimeter(self) -> float:
+        if self.__perimeter:
+            return self.__perimeter
+
+        leaf_mask = self.__get_leaf_mask_of_roi()
+        contour = find_leaf_contour(leaf_mask)
+        self.__perimeter = get_leaf_perimeter(contour)
+
+        self.__modified = True
+        return self.__perimeter
 
     def __get_widths_segments(self) -> tuple_of_11[Segment]:
         if self.__widths_segments:
