@@ -1,10 +1,7 @@
 import cv2
 import numpy as np
-import math
-import matplotlib.pyplot as plt
 
 from cv2.typing import MatLike
-from typing import Tuple, List, Any
 
 def find_leaf_contour(mask: MatLike) -> MatLike:
     """

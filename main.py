@@ -63,6 +63,12 @@ def args_def() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentPars
         action="store",
         help="the path to a folder whose content should be classified (non-recursive)",
     )
+    classify.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="if the classification output should include confidences for all classes",
+    )
 
     correlation = subparsers.add_parser(
         name="correlation",
@@ -97,13 +103,13 @@ if __name__ == "__main__":
         elif args.img != None:
             print("Starting analizing picture...")
             img = ImageFeatures(args.img)
-            print_classification_result(BAYES_classify(img.get_features()))
+            print_classification_result(BAYES_classify(img.get_features()), args.verbose)
         else:
             for img_name in os.listdir(args.dir):
                 print(f'Starting analizing picture "{img_name}"...')
                 try:
                     img = ImageFeatures(f"{args.dir}/{img_name}")
-                    print_classification_result(BAYES_classify(img.get_features()))
+                    print_classification_result(BAYES_classify(img.get_features()), args.verbose)
                 except AttributeError:
                     print(f'"{img_name}" is not an image')
                 print("============================================================")
