@@ -30,10 +30,7 @@ def __detect_lines(img: MatLike) -> Tuple[MatLike, MatLike]:
         to access the points you must acces line[0] = [x1 y1 x2 y2]
     - the image thresholded with the WHITE_THRESHOLD value
     """
-    '''
-    imgG = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    imgG = cv2.blur(imgG, (8, 8))
-    ret1, thImg = cv2.threshold(imgG, WHITE_THRESHOLD, 255, cv2.THRESH_BINARY)'''
+
 
     imgHLS = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
 
@@ -53,7 +50,7 @@ def __detect_lines(img: MatLike) -> Tuple[MatLike, MatLike]:
     # lines is a list of each line found expressed like [x1 y1 x2 y1] (!)
 
     lines = cv2.HoughLinesP(contour, 1, np.pi / 2, 50, minLineLength=150, maxLineGap=80)
-    # ! note that line is still a list, of only one element (?), to access
+    # ! note that line is still a list, of only one element, to access
     #   the points you must acces line[0] = [x1 y1 x2 y2]
 
     
@@ -88,8 +85,6 @@ def __find_paper_margin(thImg: MatLike) -> Tuple[int, int, int, int]:
 
     # trovo il margine sinistro: partendo dal bordo immagine avanzo fino al foglio per più (NUM_OF_SAMPLES) volte
     # la coordinata x del margine sarà la mediana dei valori deltaX , cioè la mediana delle coordinate dei punti del bordo
-
-    # !!! da gestire errore per accesso fuori dall'immagine
 
     # left border
     samples = []
